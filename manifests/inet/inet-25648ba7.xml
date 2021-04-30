@@ -8,7 +8,7 @@
    vendor="Tridium"
    description="IP and UDP/TCP Socket APIs"
    buildHost="DerWisseOhm"
-   buildTime="2021-04-30T18:55:24.988+02:00"
+   buildTime="2021-04-30T18:58:51.787+02:00"
 >
 
 <!-- Dependencies -->

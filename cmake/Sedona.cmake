@@ -1,7 +1,7 @@
 function(add_sedona_kit kit_name)
     add_custom_target(${kit_name} ALL 
         ${SEDONA_CC} kit.xml
-        #WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMENT "Sedona: Compile kit ${kit_name}"
     )
 endfunction()
