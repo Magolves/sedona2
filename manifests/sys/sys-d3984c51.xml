@@ -7,8 +7,8 @@
    version="1.2.28"
    vendor="Tridium"
    description="Sedona core system module"
-   buildHost="VA51DT-BIGFOOT"
-   buildTime="2013-03-06T10:27:46.897-05:00"
+   buildHost="DerWisseOhm"
+   buildTime="2021-04-30T18:24:17.082+02:00"
 >
 
 <!-- Dependencies -->
@@ -63,8 +63,8 @@
 <!-- sys::App -->
 <type id="10" name="App" sizeof="240" base="sys::Component">
   <facets>
-    <bool name="palette" val="false"/>
     <str name="niagaraIcon" val="module://icons/x16/database.png"/>
+    <bool name="palette" val="false"/>
   </facets>
   <slot id="0" name="save" type="void" flags="a"/>
   <slot id="1" name="hibernate" type="void" flags="a">
@@ -103,20 +103,20 @@
   </slot>
   <slot id="7" name="scanPeriod" type="int" flags="c" default="50">
     <facets>
-      <bool name="config" val="true"/>
       <str name="unit" val="millisecond"/>
+      <bool name="config" val="true"/>
     </facets>
   </slot>
   <slot id="8" name="guardTime" type="int" flags="c" default="5">
     <facets>
-      <bool name="config" val="true"/>
       <str name="unit" val="millisecond"/>
+      <bool name="config" val="true"/>
     </facets>
   </slot>
   <slot id="9" name="timeToSteadyState" type="int" flags="c" default="0">
     <facets>
-      <bool name="config" val="true"/>
       <str name="unit" val="millisecond"/>
+      <bool name="config" val="true"/>
     </facets>
   </slot>
   <slot id="10" name="hibernationResetsSteadyState" type="bool" flags="c" default="false">
@@ -157,18 +157,18 @@
   </slot>
   <slot id="2" name="platformId" type="sys::Buf" flags="s" default="unknown">
     <facets>
-      <bool name="asStr" val="true"/>
       <bool name="summary" val="false"/>
-      <int name="max" val="128"/>
+      <bool name="asStr" val="true"/>
       <bool name="readonly" val="true"/>
+      <int name="max" val="128"/>
     </facets>
   </slot>
   <slot id="3" name="platformVer" type="sys::Buf" flags="s" default="0">
     <facets>
-      <bool name="asStr" val="true"/>
       <bool name="summary" val="false"/>
-      <int name="max" val="17"/>
+      <bool name="asStr" val="true"/>
       <bool name="readonly" val="true"/>
+      <int name="max" val="17"/>
     </facets>
   </slot>
   <slot id="4" name="memAvailable" type="long" default="0">
@@ -278,118 +278,118 @@
   <slot id="3" name="execAvg" type="float">
     <facets>
       <str name="unit" val="millisecond"/>
-      <int name="precision" val="1"/>
       <bool name="readonly" val="true"/>
+      <int name="precision" val="1"/>
     </facets>
   </slot>
   <slot id="4" name="execMin" type="float">
     <facets>
       <bool name="summary" val="false"/>
       <str name="unit" val="millisecond"/>
-      <int name="precision" val="1"/>
       <bool name="readonly" val="true"/>
+      <int name="precision" val="1"/>
     </facets>
   </slot>
   <slot id="5" name="execMax" type="float">
     <facets>
       <bool name="summary" val="false"/>
       <str name="unit" val="millisecond"/>
-      <int name="precision" val="1"/>
       <bool name="readonly" val="true"/>
+      <int name="precision" val="1"/>
     </facets>
   </slot>
   <slot id="6" name="execMinMin" type="float">
     <facets>
       <bool name="summary" val="false"/>
       <str name="unit" val="millisecond"/>
-      <int name="precision" val="1"/>
       <bool name="readonly" val="true"/>
+      <int name="precision" val="1"/>
     </facets>
   </slot>
   <slot id="7" name="execMaxMax" type="float">
     <facets>
       <bool name="summary" val="false"/>
       <str name="unit" val="millisecond"/>
-      <int name="precision" val="1"/>
       <bool name="readonly" val="true"/>
+      <int name="precision" val="1"/>
     </facets>
   </slot>
   <slot id="8" name="workAvg" type="float">
     <facets>
       <str name="unit" val="millisecond"/>
-      <int name="precision" val="1"/>
       <bool name="readonly" val="true"/>
+      <int name="precision" val="1"/>
     </facets>
   </slot>
   <slot id="9" name="workMin" type="float">
     <facets>
       <bool name="summary" val="false"/>
       <str name="unit" val="millisecond"/>
-      <int name="precision" val="1"/>
       <bool name="readonly" val="true"/>
+      <int name="precision" val="1"/>
     </facets>
   </slot>
   <slot id="10" name="workMax" type="float">
     <facets>
       <bool name="summary" val="false"/>
       <str name="unit" val="millisecond"/>
-      <int name="precision" val="1"/>
       <bool name="readonly" val="true"/>
+      <int name="precision" val="1"/>
     </facets>
   </slot>
   <slot id="11" name="workMinMin" type="float">
     <facets>
       <bool name="summary" val="false"/>
       <str name="unit" val="millisecond"/>
-      <int name="precision" val="1"/>
       <bool name="readonly" val="true"/>
+      <int name="precision" val="1"/>
     </facets>
   </slot>
   <slot id="12" name="workMaxMax" type="float">
     <facets>
       <bool name="summary" val="false"/>
       <str name="unit" val="millisecond"/>
-      <int name="precision" val="1"/>
       <bool name="readonly" val="true"/>
+      <int name="precision" val="1"/>
     </facets>
   </slot>
   <slot id="13" name="scanAvg" type="float">
     <facets>
       <str name="unit" val="millisecond"/>
-      <int name="precision" val="1"/>
       <bool name="readonly" val="true"/>
+      <int name="precision" val="1"/>
     </facets>
   </slot>
   <slot id="14" name="scanMin" type="float">
     <facets>
       <bool name="summary" val="false"/>
       <str name="unit" val="millisecond"/>
-      <int name="precision" val="1"/>
       <bool name="readonly" val="true"/>
+      <int name="precision" val="1"/>
     </facets>
   </slot>
   <slot id="15" name="scanMax" type="float">
     <facets>
       <bool name="summary" val="false"/>
       <str name="unit" val="millisecond"/>
-      <int name="precision" val="1"/>
       <bool name="readonly" val="true"/>
+      <int name="precision" val="1"/>
     </facets>
   </slot>
   <slot id="16" name="scanMinMin" type="float">
     <facets>
       <bool name="summary" val="false"/>
       <str name="unit" val="millisecond"/>
-      <int name="precision" val="1"/>
       <bool name="readonly" val="true"/>
+      <int name="precision" val="1"/>
     </facets>
   </slot>
   <slot id="17" name="scanMaxMax" type="float">
     <facets>
       <bool name="summary" val="false"/>
       <str name="unit" val="millisecond"/>
-      <int name="precision" val="1"/>
       <bool name="readonly" val="true"/>
+      <int name="precision" val="1"/>
     </facets>
   </slot>
   <slot id="18" name="overruns" type="int" default="0">
@@ -455,17 +455,17 @@
 <!-- sys::TestComp -->
 <type id="23" name="TestComp" sizeof="140" base="sys::AbstractTestComp">
   <facets>
-    <bool name="testonly" val="true"/>
     <str name="testStr" val="roger\nroger"/>
+    <bool name="testonly" val="true"/>
   </facets>
   <slot id="0" name="z1" type="bool" flags="c" default="null">
     <facets>
-      <float name="f" val="3.8"/>
-      <bool name="config" val="true"/>
-      <str name="s" val="hello"/>
-      <bool name="bFalse" val="false"/>
-      <bool name="bTrue" val="true"/>
       <int name="i" val="35"/>
+      <bool name="bFalse" val="false"/>
+      <str name="s" val="hello"/>
+      <bool name="bTrue" val="true"/>
+      <bool name="config" val="true"/>
+      <float name="f" val="3.8"/>
     </facets>
   </slot>
   <slot id="1" name="z2" type="bool" default="true"/>
