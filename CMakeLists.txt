@@ -6,3 +6,5 @@ include(cmake/Sedona.cmake)
 
 add_subdirectory(src/sys)
 add_subdirectory(src/inet)
+
+add_subdirectory(src/vm-mqtt)
