@@ -14,21 +14,21 @@ function(add_sedona_native kit_name dir)
     #message(STATUS "Sedona: Native files ${SEDONA_NATIVE}")
 endfunction()
 
-message(STATUS "Sedona: Home is $ENV{sedona_home}")
+message(STATUS "Sedona: Home is $ENV{SEDONA_HOME}")
 
-if(DEFINED ENV{sedona_home})
+if(DEFINED ENV{SEDONA_HOME})
     find_program(SEDONA_CC sedonac 
         NAMES sedonac sedonac.sh 
-        PATHS ~/sedona ENV sedona_home
+        PATHS ~/sedona ENV SEDONA_HOME
         DOC "Sedona compiler"
         REQUIRED)
 
     message(STATUS "Sedona: CC is ${SEDONA_CC}")
 
     # Define variables
-    set(SEDONA_KITS_DIR $ENV{sedona_home}/kits)
-    set(SEDONA_MANIFESTS_DIR $ENV{sedona_home}/manifests)
-    set(SEDONA_VM_SOURCE_DIR $ENV{sedona_home}/src/vm)
+    set(SEDONA_KITS_DIR $ENV{SEDONA_HOME}/kits)
+    set(SEDONA_MANIFESTS_DIR $ENV{SEDONA_HOME}/manifests)
+    set(SEDONA_VM_SOURCE_DIR $ENV{SEDONA_HOME}/src/vm)
 
     add_custom_target(sedona-copy-native
         COMMAND cp ${SEDONA_NATIVE} ${SEDONA_VM_SOURCE_DIR}
