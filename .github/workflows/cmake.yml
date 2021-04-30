@@ -18,9 +18,15 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Create Sedona Environment
-      # Some projects don't allow in-source building, so create a separate build directory
-      # We'll use this as our working directory for all subsequent commands
-      run: export sedona_home=.
+      uses: allenevans/set-env@v2.0.0
+      with:
+        sedona_home: '.'
+
+    - name: Printenv
+      run: |
+        echo "sedona_home=${sedona_home}"
+        echo "SEDONA_HOME=${SEDONA_HOME}"
+        printenv
 
 
     - name: Create Build Environment
