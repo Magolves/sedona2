@@ -1,1 +1,3 @@
-# sedona2
+# sedona 2
+
+See [Sedona alliance(<https://www.sedona-alliance.org/resources.htm>)].
