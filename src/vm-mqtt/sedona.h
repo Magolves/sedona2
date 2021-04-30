@@ -170,7 +170,7 @@ typedef short             int_least16_t;
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <endian.h>
+#//include <endian.h>
 #include <sys/stat.h>
 #include <math.h>
 
