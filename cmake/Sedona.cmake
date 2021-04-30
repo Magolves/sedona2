@@ -19,7 +19,7 @@ message(STATUS "Sedona: Home is $ENV{SEDONA_HOME}")
 if(DEFINED ENV{SEDONA_HOME})
     find_program(SEDONA_CC sedonac 
         NAMES sedonac sedonac.sh 
-        PATHS ~/sedona ENV SEDONA_HOME
+        PATHS ENV{SEDONA_HOME}/bin ${CMAKE_SOURCE_DIR}/bin ~/sedona/bin        
         DOC "Sedona compiler"
         REQUIRED)
 
