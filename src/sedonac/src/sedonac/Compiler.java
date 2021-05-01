@@ -85,8 +85,8 @@ public class Compiler
   public Compiler()
   {
     log     = new CompilerLog();
-    errors  = new ArrayList();
-    warnings= new ArrayList();
+    errors  = new ArrayList<>();
+    warnings= new ArrayList<>();
     ns      = new Namespace();
   }
 
@@ -270,7 +270,7 @@ public class Compiler
    */
   public CompilerException[] errors()
   {
-    return (CompilerException[])errors.toArray(new CompilerException[errors.size()]);
+    return errors.toArray(new CompilerException[0]);
   }
 
   /**
@@ -280,7 +280,7 @@ public class Compiler
   public void quitIfErrors()
   {
     if (errors.size() > 0)
-      throw (CompilerException)errors.get(0);
+      throw errors.get(0);
   }
 
   /**
@@ -290,8 +290,7 @@ public class Compiler
   public int logErrors()
   {
     CompilerException[] errors = errors();
-    for (int i=0; i<errors.length; ++i)
-      log.error(errors[i]);
+    for (CompilerException error : errors) log.error(error);
     return errors.length;
   }
 
@@ -408,13 +407,12 @@ public class Compiler
   public boolean sim = false;      // env -stageSim
   public Namespace ns;             // ctor
   public XElem xml;                // compile(String)
-  ArrayList errors;                // err()
-  ArrayList warnings;              // warn() - ArrayList so spawn retains state
+  ArrayList<CompilerException> errors;                // err()
+  ArrayList<String> warnings;              // warn() - ArrayList so spawn retains state
 
   // compile kit pipeline
   public KitDef ast;               // InitKitCompile
   public SourceFile[] sourceFiles; // InitKitCompile
-  public boolean[] testOnly;       // InitKitCompile
   public IrKit ir;                 // Assemble
   public KitManifest manifest;     // BuildManifest
 
