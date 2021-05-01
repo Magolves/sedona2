@@ -59,7 +59,7 @@ set(SRC
     sys_Component.c
     sys_File_std.c
     sys_FileStore_std.c
-    sys_PlatformService_unix.c
+    #sys_PlatformService_unix.c
     sys_StdOutStream_std.c
     sys_Str.c
     sys_Sys.c
@@ -70,6 +70,12 @@ set(SRC
     uthash.h
     vm.c
 )
+
+if (APPLE)
+    set(SRC ${SRC} sys_PlatformService_macos.c)
+else()
+    set(SRC ${SRC} sys_PlatformService_unix.c)
+endif()
 
 add_executable(vmmq ${SRC})
 

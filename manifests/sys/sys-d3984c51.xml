@@ -7,8 +7,8 @@
    version="1.2.28"
    vendor="Tridium"
    description="Sedona core system module"
-   buildHost="DerWisseOhm"
-   buildTime="2021-04-30T19:11:49.341+02:00"
+   buildHost="Duezzi.fritz.box"
+   buildTime="2021-05-01T11:22:12.397+02:00"
 >
 
 <!-- Dependencies -->
