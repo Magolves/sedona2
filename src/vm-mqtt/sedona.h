@@ -171,7 +171,7 @@ typedef short             int_least16_t;
 #include <stdbool.h>
 #include <unistd.h>
 #ifndef __APPLE__
-include <endian.h>
+#include <endian.h>
 #endif
 #include <sys/stat.h>
 #include <math.h>
