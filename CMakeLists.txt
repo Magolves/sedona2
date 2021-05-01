@@ -5,7 +5,7 @@ project(Sedona)
 include(cmake/Java.cmake)
 include(cmake/Sedona.cmake)
 
-add_subdirectory(src/sedona)
+add_subdirectory(src/sedona/src)
 add_subdirectory(src/sedonac)
 
 add_subdirectory(src/sys)
