@@ -23,7 +23,7 @@ message(STATUS "${SEDONA_CC} ARGS ${PLATFORM_DEF} -outDir ${VM_DIR}")
 add_custom_target(staging ALL
     COMMAND ${SEDONA_CC} ${PLATFORM_DEF} -outDir ${VM_DIR}
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    DEPENDS sys inet datetime datetimeStd platUnix
+    DEPENDS sys inet datetime datetimeStd platUnix sedonac_jar
     #BYPRODUCTS ${VM_DIR}/sedona.h 
     COMMENT "Prepare platform"
 )
