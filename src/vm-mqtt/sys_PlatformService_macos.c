@@ -35,9 +35,8 @@ Cell sys_PlatformService_getPlatVersion(SedonaVM* vm, Cell* params)
 // long PlatformService.getNativeMemAvailable()
 int64_t sys_PlatformService_getNativeMemAvailable(SedonaVM* vm, Cell* params)
 {
-  struct sysinfo info;
-  sysinfo(&info);
-  return info.freeram * (long)info.mem_unit;     // this may be Linux-specific
+  // FOIXME: https://stackoverflow.com/questions/6094444/how-can-i-programmatically-check-free-system-memory-on-mac-like-the-activity-mon
+  return 64000L;
 }
 
 
