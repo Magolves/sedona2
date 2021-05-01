@@ -1,3 +1,5 @@
-# sedona 2
+# Sedona 2
 
-See [Sedona alliance(<https://www.sedona-alliance.org/resources.htm>)]
+Experimental extensions to Sedona.
+
+See [Sedona alliance](<https://www.sedona-alliance.org/resources.htm>)]
