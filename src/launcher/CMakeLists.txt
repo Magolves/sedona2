@@ -9,7 +9,10 @@ set(CMAKE_BUILD_TYPE Release)
 # ---------------------- Check for Java installation
 set(JAVA_HOME $ENV{JAVA_HOME})
 if (NOT JAVA_HOME) 
-    message(ERROR "JAVA_HOME not defined")
+    set(JAVA_HOME $ENV{java_home})
+    if (NOT JAVA_HOME) 
+      message(FATAL_ERROR "JAVA_HOME not defined")
+    endif()
 else()
     message(STATUS "Java found at ${JAVA_HOME}")
 endif()    
@@ -52,16 +55,21 @@ add_definitions( -DLAUNCHER_VERSION="${GIT_REVISION}" -DLAUNCHER_DATE="${TS}")
 # In PowerShell you cann accomplish this via
 # > $env:sedona_launcher_debug=1
 
-add_executable(sedonac-rb launcher.cpp)
+if (WINDOWS)
+  add_executable(sedonac launcher_windows.cpp)
+  target_compile_definitions(sedonac PRIVATE -DLAUNCHER_MAIN="sedonac/Main" -DSEDONAC_JAR="sedonac")
+  target_include_directories(sedonac PRIVATE ${JAVA_HOME}/include ${JAVA_HOME}/include/win32)
+
+  # Install both target to binary directory
+  #install(TARGETS sedonac-rb RUNTIME DESTINATION ${INSTALL_DIR})
+  install(TARGETS sedonac RUNTIME DESTINATION ${INSTALL_DIR})
+else()
+  message(STATUS "Launcher not implemented for '${CMAKE_SYSTEM_NAME}'")
+endif()
+
+#add_executable(sedonac-rb ${LAUNCHER_SRC})
 # Define your main class here (NOTE: You to use '/' as path separator, not '.'!)
-target_compile_definitions(sedonac-rb PRIVATE -DLAUNCHER_MAIN="sedonacmt/MainMulti" -DSEDONAC_JAR="sedonac-rb")
-target_include_directories(sedonac-rb PRIVATE ${JAVA_HOME}/include ${JAVA_HOME}/include/win32)
+#target_compile_definitions(sedonac-rb PRIVATE -DLAUNCHER_MAIN="sedonacmt/MainMulti" -DSEDONAC_JAR="sedonac-rb")
+#target_include_directories(sedonac-rb PRIVATE ${JAVA_HOME}/include ${JAVA_HOME}/include/win32)
 
 # Target for the default (fallback) compiler
-add_executable(sedonac launcher.cpp)
-target_compile_definitions(sedonac PRIVATE -DLAUNCHER_MAIN="sedonac/Main" -DSEDONAC_JAR="sedonac")
-target_include_directories(sedonac PRIVATE ${JAVA_HOME}/include ${JAVA_HOME}/include/win32)
-
-# Install both target to binary directory
-install(TARGETS sedonac-rb RUNTIME DESTINATION ${INSTALL_DIR})
-install(TARGETS sedonac RUNTIME DESTINATION ${INSTALL_DIR})
