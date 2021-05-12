@@ -8,6 +8,8 @@ include(cmake/Sedona.cmake)
 add_subdirectory(src/sedona/src)
 add_subdirectory(src/sedonac)
 
+add_subdirectory(src/launcher)
+
 add_subdirectory(src/sys)
 add_subdirectory(src/inet)
 add_subdirectory(src/datetime)
