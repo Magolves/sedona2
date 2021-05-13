@@ -20,8 +20,6 @@ sedonac_path=`dirname $(cd ${0%/*} && echo $PWD/${0##*/})`
 
 # Determine sedona home by pulling off trailing /bin
 sedona_home=${sedonac_path%/bin}
-echo $sedona_home
-echo $sedonac_path
-echo ls $sedona_home/lib/*
+
 java -Dsedona.home=$sedona_home -cp "$sedona_home/lib/*" sedonac/Main "$@"
 
