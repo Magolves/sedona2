@@ -9,3 +9,5 @@ add_jar(sedonac_jar ${JAVA_SOURCES}
     OUTPUT_NAME sedonac
     OUTPUT_DIR ${CMAKE_BINARY_DIR}/lib
 )
+
+add_test(NAME sedonac_from_jar COMMAND java -jar ${CMAKE_SOURCE_DIR}/lib/sedonac.jar -version)

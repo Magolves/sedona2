@@ -31,3 +31,5 @@ add_custom_target(staging ALL
 )
 
 add_subdirectory(src/vm-mqtt)
+
+enable_testing()
