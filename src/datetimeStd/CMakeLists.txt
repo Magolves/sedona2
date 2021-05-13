@@ -1,0 +1,2 @@
+add_sedona_kit(datetimeStd)
+add_dependencies(datetimeStd sys datetime)
