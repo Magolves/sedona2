@@ -7,7 +7,7 @@ add_jar(sedonac_jar ${JAVA_SOURCES}
     ENTRY_POINT sedonac.Main
     INCLUDE_JARS sedona_jar    
     OUTPUT_NAME sedonac
-    OUTPUT_DIR ${CMAKE_BINARY_DIR}/lib
+    OUTPUT_DIR ${CMAKE_SOURCE_DIR}/lib
 )
 
 add_test(NAME sedonac_from_jar COMMAND java -jar ${CMAKE_SOURCE_DIR}/lib/sedonac.jar -version)
