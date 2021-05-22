@@ -44,4 +44,9 @@ add_custom_target(staging ALL
 
 add_subdirectory(src/vm-mqtt)
 
+# Buold scode files
+add_subdirectory(scode)
+# Build the apps
+add_subdirectory(apps)
+
 enable_testing()

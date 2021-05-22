@@ -6,13 +6,29 @@ function(add_sedona_kit kit_name)
     )
 endfunction()
 
-
 function(add_sedona_native kit_name dir)
     FILE(GLOB NATIVE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/*.c ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/*.h)
     #message(STATUS "Sedona: Native files ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/*.c: ${NATIVE_FILES}")
     list(APPEND SEDONA_NATIVE  ${NATIVE_FILES})
     #message(STATUS "Sedona: Native files ${SEDONA_NATIVE}")
 endfunction()
+
+function(add_sedona_app app_name)
+    add_custom_target(app_${app_name} ALL 
+        ${SEDONA_CC} ${app_name}.sax
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Sedona: Compile app ${app_name}"
+    )
+endfunction()
+
+function(add_sedona_scode scode_name)
+    add_custom_target(scode_${scode_name} ALL 
+        ${SEDONA_CC} ${scode_name}.xml
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Sedona: Compile scode ${scode_name}"
+    )
+endfunction()
+
 
 message(STATUS "Sedona: Home is $ENV{SEDONA_HOME}")
 
