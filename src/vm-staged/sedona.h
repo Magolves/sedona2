@@ -170,7 +170,9 @@ typedef short             int_least16_t;
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>
+#ifndef __APPLE__
 #include <endian.h>
+#endif
 #include <sys/stat.h>
 #include <math.h>
 
@@ -206,6 +208,9 @@ typedef short             int_least16_t;
 #  define FALSE 0
 #endif
 
+#ifndef isnanf
+#define isnanf(x) isnan((double)(x))
+#endif
 
 #define ISNANF(f) (isnanf(f))
 #define ISNAN(d)  (isnan(d))

@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.15)
 
 project(Sedona)
 
+option(COMPILE_KITS Off)
+
 include(cmake/Java.cmake)
 include(cmake/Sedona.cmake)
 
@@ -15,17 +17,19 @@ add_subdirectory(src/basicSchedule)
 add_subdirectory(src/inet)
 add_subdirectory(src/datetime)
 add_subdirectory(src/datetimeStd)
-add_subdirectory(src/func)
-add_subdirectory(src/pricomp)
-add_subdirectory(src/pstore)
-add_subdirectory(src/control)
-add_subdirectory(src/types)
-add_subdirectory(src/math)
-add_subdirectory(src/sox)
-add_subdirectory(src/web)
-add_subdirectory(src/hvac)
-add_subdirectory(src/logic)
-add_subdirectory(src/timing)
+if (COMPILE_KITS)
+    add_subdirectory(src/func)
+    add_subdirectory(src/pricomp)
+    add_subdirectory(src/pstore)
+    add_subdirectory(src/control)
+    add_subdirectory(src/types)
+    add_subdirectory(src/math)
+    add_subdirectory(src/sox)
+    add_subdirectory(src/web)
+    add_subdirectory(src/hvac)
+    add_subdirectory(src/logic)
+    add_subdirectory(src/timing)
+endif()
 
 add_subdirectory(platforms/src/generic/unix)
 
@@ -42,6 +46,7 @@ add_custom_target(staging ALL
     COMMENT "Prepare platform"
 )
 
+add_subdirectory(src/vm-staged)
 add_subdirectory(src/vm-mqtt)
 
 # Buold scode files

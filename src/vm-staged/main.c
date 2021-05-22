@@ -318,7 +318,11 @@ static int printVersion()
   printf("buildDate: %s %s\n", __DATE__, __TIME__);
   printf("endian:    %s\n", endian);
   printf("blockSize: %d\n", SCODE_BLOCK_SIZE);
+#ifdef __UNIX__
+  printf("refSize:   %lu\n", sizeof(void*));
+#else
   printf("refSize:   %d\n", sizeof(void*));
+#endif
   printf("\n");
   return 0;
 }

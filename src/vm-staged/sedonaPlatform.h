@@ -6,6 +6,8 @@
 #ifndef SEDONAC_SEDONA_PLATFORM_H
 #define SEDONAC_SEDONA_PLATFORM_H
 
+#ifndef PLATFORM_ID
 #define PLATFORM_ID "tridium-generic-unix-1.2.28"
+#endif
 
 #endif
