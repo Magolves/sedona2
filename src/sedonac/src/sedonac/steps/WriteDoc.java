@@ -8,17 +8,23 @@
 
 package sedonac.steps;
 
-import java.io.*;
-import java.util.*;
 import sedona.Env;
-import sedona.util.*;
-import sedona.xml.*;
-import sedonac.*;
+import sedona.util.FileUtil;
+import sedona.util.TextUtil;
+import sedona.xml.XWriter;
 import sedonac.Compiler;
+import sedonac.CompilerStep;
+import sedonac.Location;
 import sedonac.ast.*;
 import sedonac.namespace.Type;
 import sedonac.namespace.TypeUtil;
-import sedonac.util.*;
+import sedonac.util.DocParser;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 
 /**
  * WriteDoc generates the HTML Sedona docs for the APIs

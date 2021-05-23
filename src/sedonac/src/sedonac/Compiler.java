@@ -8,10 +8,6 @@
 
 package sedonac;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-
 import sedona.manifest.KitManifest;
 import sedona.util.Version;
 import sedona.xml.XElem;
@@ -21,59 +17,26 @@ import sedonac.ast.KitDef;
 import sedonac.ir.IrFlat;
 import sedonac.ir.IrKit;
 import sedonac.ir.IrMethod;
+import sedonac.namespace.Kit;
+import sedonac.namespace.Method;
 import sedonac.namespace.Namespace;
+import sedonac.namespace.Type;
 import sedonac.platform.PlatformDef;
 import sedonac.scode.SCodeImage;
-import sedonac.steps.Assemble;
-import sedonac.steps.AssignSlotIds;
-import sedonac.steps.BuildManifest;
-import sedonac.steps.CheckErrors;
-import sedonac.steps.CheckHtmlLinks;
-import sedonac.steps.CompileDir;
-import sedonac.steps.ConstFolding;
-import sedonac.steps.ConvertAppFile;
-import sedonac.steps.FieldLayout;
-import sedonac.steps.FilterTestClasses;
-import sedonac.steps.FindTestCases;
-import sedonac.steps.GenNativeTable;
-import sedonac.steps.Generate;
-import sedonac.steps.Inherit;
-import sedonac.steps.InitImageCompile;
-import sedonac.steps.InitKitCompile;
-import sedonac.steps.InitStagePlatform;
-import sedonac.steps.InlineConsts;
-import sedonac.steps.InstanceInit;
-import sedonac.steps.MountAstIntoNamespace;
-import sedonac.steps.Normalize;
-import sedonac.steps.NormalizeExpr;
-import sedonac.steps.OptimizeIr;
-import sedonac.steps.OrderAstTypes;
-import sedonac.steps.OrderIrTypes;
-import sedonac.steps.OrderStaticInits;
-import sedonac.steps.Parse;
-import sedonac.steps.ReadKits;
-import sedonac.steps.ResolveDepends;
-import sedonac.steps.ResolveExpr;
-import sedonac.steps.ResolveFacets;
-import sedonac.steps.ResolveIR;
-import sedonac.steps.ResolveIncludes;
-import sedonac.steps.ResolveNatives;
-import sedonac.steps.ResolveTypes;
-import sedonac.steps.StageNatives;
-import sedonac.steps.StagePlatform;
-import sedonac.steps.StaticAnalysis;
-import sedonac.steps.TableOfContents;
-import sedonac.steps.VTableLayout;
-import sedonac.steps.WriteDoc;
-import sedonac.steps.WriteImage;
-import sedonac.steps.WriteKit;
+import sedonac.steps.*;
 import sedonac.translate.Translation;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Main command line entry point for the Sedona compiler.
  */
 public class Compiler
 {
+  public static final String UI_PREFIX = "UI|";
 
 ////////////////////////////////////////////////////////////////
 // Constructor
@@ -85,9 +48,10 @@ public class Compiler
   public Compiler()
   {
     log     = new CompilerLog();
-    errors  = new ArrayList<>();
-    warnings= new ArrayList<>();
+    errors  = new ArrayList();
+    warnings= new ArrayList();
     ns      = new Namespace();
+    umlMap  = new HashMap<>();
   }
 
 ////////////////////////////////////////////////////////////////
@@ -102,7 +66,7 @@ public class Compiler
     // check that input file exists
     if (!f.exists())
       throw err("Input file does not exist" , new Location(input));
-      
+
     // if directory, then look for kit.xml
     if (f.isDirectory())
     {
@@ -183,7 +147,10 @@ public class Compiler
     new BuildManifest(this).run();
     new OptimizeIr(this).run();
     new WriteKit(this).run();
-    new WriteDoc(this).run(); 
+    new WriteDoc(this).run();
+    new WritePuml(this).run();
+    new RenderPuml(this).run();
+    new WritePumlDoc(this).run();
   }
 
   /**
@@ -211,12 +178,12 @@ public class Compiler
    * Run the pipeline to compile a directory of compiler targets.
    */
   public void compileDir()
-  {                                                             
+  {
     new CompileDir(this).run();
   }
 
   /**
-   * Run the pipeline to stage the VM and native source 
+   * Run the pipeline to stage the VM and native source
    * code for a specific platform port.
    */
   public void stagePlatform()
@@ -232,7 +199,7 @@ public class Compiler
    * Run the pipeline to compile a set of kits into Java or C code.
    */
   public void translate()
-  {                         
+  {
     throw new RuntimeException("translate not supported yet");
   }
 
@@ -270,7 +237,7 @@ public class Compiler
    */
   public CompilerException[] errors()
   {
-    return errors.toArray(new CompilerException[0]);
+    return (CompilerException[])errors.toArray(new CompilerException[errors.size()]);
   }
 
   /**
@@ -280,7 +247,7 @@ public class Compiler
   public void quitIfErrors()
   {
     if (errors.size() > 0)
-      throw errors.get(0);
+      throw (CompilerException)errors.get(0);
   }
 
   /**
@@ -290,7 +257,8 @@ public class Compiler
   public int logErrors()
   {
     CompilerException[] errors = errors();
-    for (CompilerException error : errors) log.error(error);
+    for (int i=0; i<errors.length; ++i)
+      log.error(errors[i]);
     return errors.length;
   }
 
@@ -350,17 +318,17 @@ public class Compiler
   {
     return err(new CompilerException(err));
   }
-                       
+
 ////////////////////////////////////////////////////////////////
 // Warnings
 ////////////////////////////////////////////////////////////////
-  
+
   public void warn(String msg)
   {
     log.warn("[WARNING] " + msg);
     warnings.add(msg);
   }
-  
+
   public void warn(String msg, Location loc)
   {
     if (loc != null) msg = loc + ": " + msg;
@@ -370,13 +338,13 @@ public class Compiler
 ////////////////////////////////////////////////////////////////
 // New Copy
 ////////////////////////////////////////////////////////////////
-  
+
   /**
-   * Create a new fresh compiler instance which 
+   * Create a new fresh compiler instance which
    * inherits all the environment configuration.
    */
   public Compiler spawn()
-  {              
+  {
     Compiler c = new Compiler();
     c.log        = this.log;
     c.doc        = this.doc;
@@ -389,7 +357,96 @@ public class Compiler
     c.www        = this.www;
     return c;
   }
-                       
+
+////////////////////////////////////////////////////////////////
+// UML support
+////////////////////////////////////////////////////////////////
+
+  /**
+   * Gets the diagram file for the given kit.
+   * @param kit the kit
+   * @return the UML diagram file
+   */
+  public File getDiagramFor(Kit kit) {
+    return umlMap.get(kit.name());
+  }
+
+  /**
+   * Gets the diagram file for the given type.
+   * @param type the type
+   * @return the UML diagram file
+   */
+  public File getDiagramFor(Type type) {
+    return umlMap.get(type.qname());
+  }
+
+  /**
+   * Gets the UI diagram file for the given type.
+   * @param type the type
+   * @return the UML UI diagram file
+   */
+  public File getUiDiagramFor(Type type) {
+    return umlMap.get(UI_PREFIX + type.qname());
+  }
+
+  /**
+   * Gets the diagram file for the given type.
+   * @param type the type
+   * @param method the method
+   * @return the UML diagram file
+   */
+  public File getDiagramFor(Type type, Method method) {
+    return umlMap.get(getMethodKey(type, method));
+  }
+
+  /**
+   * Helper funtion to create the hash key for the given type and method.
+   * @param type the type
+   * @param method the method
+   * @return the hash key
+   */
+  private String getMethodKey(Type type, Method method) {
+    return type.qname() + "#" + method.name();
+  }
+
+  /**
+   * Stores an key-value pair for the given kit.
+   * @param kit the kit
+   * @param file the diagram file
+   */
+  public void storeDiagram(Kit kit, File file) {
+    umlMap.put(kit.name(), file);
+  }
+
+  /**
+   * Stores an key-value pair for the given type.
+   * @param type the type
+   * @param file the diagram file
+   */
+  public void storeDiagram(Type type, File file) {
+    umlMap.put(type.qname(), file);
+  }
+
+  /**
+   * Stores an key-value pair for the given type.
+   * @param type the type
+   * @param file the UI diagram file
+   */
+  public void storeUiDiagram(Type type, File file) {
+    umlMap.put(UI_PREFIX + type.qname(), file);
+  }
+
+  /**
+   * Stores an key-value pair for the given type and method.
+   * @param type the type
+   * @param method the type
+   * @param file the diagram file
+   */
+  public void storeDiagram(Type type, Method method, File file) {
+    umlMap.put(getMethodKey(type, method), file);
+  }
+
+
 ////////////////////////////////////////////////////////////////
 // Fields
 ////////////////////////////////////////////////////////////////
@@ -399,20 +456,31 @@ public class Compiler
   public boolean doc;              // env -doc
   public File input;               // env <input>
   public boolean dumpLayout;       // env -layout
-  public Version kitVersion;       // env -kitVersion 
-  public File outDir;              // env -outDir     
+  public Version kitVersion;       // env -kitVersion
+  public File outDir;              // env -outDir
   public boolean optimize = true;  // env -noOptimize
   public boolean www = false;      // env -www
   public boolean nochk = false;    // env -noChecksum
   public boolean sim = false;      // env -stageSim
   public Namespace ns;             // ctor
   public XElem xml;                // compile(String)
-  ArrayList<CompilerException> errors;                // err()
-  ArrayList<String> warnings;              // warn() - ArrayList so spawn retains state
+  ArrayList errors;                // err()
+  ArrayList warnings;              // warn() - ArrayList so spawn retains state
+
+  // UML flags
+  public boolean umlDoc = false;             // env -udoc
+  public boolean umlFq = false;             // env -ufq
+  public boolean umlAllTypes = false;       // env -uall
+  public boolean umlSplitClsDgms = false;   // env -usplit
+  public boolean umlOnlyPublic = true;      // env -uprv
+  public boolean umlRenderWithPlantUml = false;  // env -uplant
+  public boolean umlSvg = false;            // env -usvg
+  public File umlOutDir;              // set by WritePuml
 
   // compile kit pipeline
   public KitDef ast;               // InitKitCompile
   public SourceFile[] sourceFiles; // InitKitCompile
+  public boolean[] testOnly;       // InitKitCompile
   public IrKit ir;                 // Assemble
   public KitManifest manifest;     // BuildManifest
 
@@ -425,7 +493,9 @@ public class Compiler
 
   // stage natives
   public PlatformDef platform;     // InitStageNatives
-  
+
   // translate to C pipeline
   public Translation translation;  // InitTranslate
+
+  public HashMap<String, File> umlMap;
 }

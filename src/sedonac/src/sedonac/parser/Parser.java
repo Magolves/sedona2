@@ -12,15 +12,19 @@
 
 package sedonac.parser;
 
-import java.io.*;
-import java.util.*;
-import sedona.Facets;
-import sedona.Value;
-import sedona.Bool;
-import sedonac.*;
 import sedonac.Compiler;
+import sedonac.CompilerException;
+import sedonac.CompilerSupport;
+import sedonac.Location;
 import sedonac.ast.*;
-import sedonac.namespace.*;
+import sedonac.namespace.ArrayType;
+import sedonac.namespace.Method;
+import sedonac.namespace.Slot;
+import sedonac.namespace.Type;
+
+import java.io.File;
+import java.io.InputStream;
+import java.util.ArrayList;
 
 /**
  * Parser for sedona program parser
@@ -67,7 +71,7 @@ public class Parser
 // Unit
 //////////////////////////////////////////////////////////////////////////
 
-  public TypeDef[] parse()
+  public synchronized TypeDef[] parse()
   {
     readTokens();
     ArrayList acc = new ArrayList();
