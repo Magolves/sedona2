@@ -18,7 +18,7 @@ add_subdirectory(src/launcher)
 if (USE_SEDONA_MT)
     add_custom_target(all-kits ALL 
         DEPENDS sedonacmt_jar
-        COMMAND ${CMAKE_SOURCE_DIR}/bin/sedonacmt.sh
+        COMMAND ${CMAKE_SOURCE_DIR}/bin/sedonacmt.sh ${CMAKE_SOURCE_DIR}/src
     )
 else()
     add_subdirectory(src/sys)
