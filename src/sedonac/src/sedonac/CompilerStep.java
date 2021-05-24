@@ -24,6 +24,7 @@ public abstract class CompilerStep
   public CompilerStep(Compiler compiler)
   {
     super(compiler);
+    compiler.log.setLogName(this.getClass().getSimpleName());
   }
 
 ////////////////////////////////////////////////////////////////

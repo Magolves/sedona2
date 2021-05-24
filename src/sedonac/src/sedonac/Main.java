@@ -8,13 +8,13 @@
 
 package sedonac;
 
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-
 import sedona.Env;
 import sedona.util.Log;
 import sedona.util.Version;
 import sedonac.test.Test;
+
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * Main command line entry point for the Sedona compiler.
@@ -44,6 +44,15 @@ public class Main
     println("  -noOptimize  skip const folding and optimization steps");
     println("  -noChecksum  exclude checksums from sax if input is sab file");
     println("  -stageSim    stage platform for simulated SVM build");
+    println("");
+    println("  -udoc        UML: Enable UML export");
+    println("  -uall        UML: Export all types (instead reflective types only)");
+    println("  -ufq         UML: Use full-qualified type names");
+    println("  -usplit      UML: Generate overview and class-diagrams for each type (recommended for big kits)");
+    println("  -uprv        UML: Generate also private and protected members");
+    println("  -uplant      UML: Render generated diagrams with plantUML");
+    println("                    (plantUML.jar must be in classpath)");
+    println("  -usvg        UML: Render diagrams as SVG file (otherwise PNG is used)");
   }
 
   private static void errUsage(String err)
@@ -71,7 +80,7 @@ public class Main
       return 1;
     }
 
-    // if first arg is class name, then run that main (so
+    // if first arg is class name, then rsun that main (so
     // launcher can always use this entry point)
     if (args[0].startsWith("sedona.") || args[0].startsWith("sedonac."))
     {
@@ -160,6 +169,35 @@ public class Main
       else if (arg.equals("-stageSim"))
       {
         compiler.sim = true;
+      }
+      // UML options
+      else if (arg.equals("-udoc"))
+      {
+        compiler.umlDoc = true;
+      }
+      else if (arg.equals("-ufq"))
+      {
+        compiler.umlFq = true;
+      }
+      else if (arg.equals("-uall"))
+      {
+        compiler.umlAllTypes = true;
+      }
+      else if (arg.equals("-usplit"))
+      {
+        compiler.umlSplitClsDgms = true;
+      }
+      else if (arg.equals("-uprv"))
+      {
+        compiler.umlOnlyPublic = false;
+      }
+      else if (arg.equals("-uplant"))
+      {
+        compiler.umlRenderWithPlantUml = true;
+      }
+      else if (arg.equals("-usvg"))
+      {
+        compiler.umlSvg = true;
       }
       else if (arg.startsWith("-"))
       {

@@ -1,32 +1,25 @@
 # Sedona 2
 
-Experimental extensions to Sedona.
+Experimental extensions to Sedona. Sedona is very simple programming languages intended
+for small controllers - similar to Lua. 
+See [Sedona alliance](<https://www.sedona-alliance.org/resources.htm>).
 
-See [Sedona alliance](<https://www.sedona-alliance.org/resources.htm>)]
 
-## 64bit-Support
+## Improved compilation
 
-Currently 32bit (`refSize`) is hard-coded in `steps/FieldLayout.java`:
+The old Sedona Compiler `sedonac` was limited to compile a single kit at once. Even worse, it compiled the complete kit even if the kit was up-to-date.
 
-```java
-public FieldLayout(Compiler compiler)
-{
-    super(compiler);
-    this.refSize = compiler.image == null ? 4 : compiler.image.refSize;
-}
-```
+The improved compiler `sedonac` and `sedonacmt` offers then following features to reduce compile time
 
-Additional sizes in `Namespace.java` needs to be adjusted
+### No unnecessary rebuild
 
-```java
-public final PrimitiveType voidType   = primitive("void",   Type.voidId,  0);
-public final PrimitiveType boolType   = primitive("bool",   Type.boolId,  1);
-public final PrimitiveType byteType   = primitive("byte",   Type.byteId,  1);
-public final PrimitiveType shortType  = primitive("short",  Type.shortId, 4); // 2
-public final PrimitiveType intType    = primitive("int",    Type.intId,   8); // 4
-public final PrimitiveType longType   = primitive("long",   Type.longId,  16); //8
-public final PrimitiveType floatType  = primitive("float",  Type.floatId, 4);
-public final PrimitiveType doubleType = primitive("double", Type.doubleId, 8);
-```
+Compilation is skipped if kit file is up-to-date.
 
-Requires also an extra instruction for 128bit values?
+### Generate UML diagrams
+
+`sedonac` and `sedonacmt` generate ([PlantUML](<https://plantuml.com>) class and sequence diagrams.
+
+### Build-capabilities
+
+`sedonacmt` scans all sub-directories fot `kit.xml` and rebuilds all kits, if required. Furthermore it uses the kit dependencies to determine the build sequence and tries also to use as many cores as possible to parallelize compilation.
+
