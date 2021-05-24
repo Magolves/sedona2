@@ -68,6 +68,7 @@ endif()
 
 add_subdirectory(src/vm-staged)
 add_subdirectory(src/vm-mqtt)
+#add_subdirectory(src/vm-test)
 
 # Buold scode files
 add_subdirectory(scode)
