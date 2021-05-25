@@ -26,3 +26,24 @@ public final PrimitiveType doubleType = primitive("double", Type.doubleId, 8);
 ```
 
 Requires also an extra instruction for 128bit values?
+
+SCode with `RefSize = 8`:
+
+```text
+[ 96%] Built target scode_platUnix
+[ 97%] Sedona: Compile scode platMacOs
+[ReadKits]   ReadKits [15 kits]
+[FieldLayout] [0x       0] 0 fields with sizeof 1, offset 0
+[FieldLayout] [0x       0] 0 fields with sizeof 2, offset 0
+[FieldLayout] [0x       0] 0 fields with sizeof 4, offset 0
+[FieldLayout] [0x       0] 0 fields with sizeof 1, offset 0
+[FieldLayout] [0x       0] 0 fields with sizeof 2, offset 0
+[FieldLayout] [0x       0] 0 fields with sizeof 4, offset 0
+[FieldLayout] [0x       0] 1 fields with sizeof 1, offset 0
+[FieldLayout] [0x       0] ==> off = 0, size match =false, primitive = false
+[FieldLayout] [0x       0] 1 fields with sizeof 2, offset 0
+[FieldLayout] [0x       0] ==> off = 0, size match =false, primitive = false
+[FieldLayout] [0x       0] 1 fields with sizeof 4, offset 0
+[FieldLayout] [0x       0] ==> off = 0, size match =false, primitive = false
+[FieldLayout] Internal compiler error
+```
