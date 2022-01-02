@@ -12,3 +12,5 @@ if (WIN32)
     add_sedona_app(win32/platWin32wdft)
     add_sedona_app(win32/platWin32yield)
 endif()
+
+add_sedona_app(./test-mqtt)
