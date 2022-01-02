@@ -9,3 +9,5 @@ endif()
 if (WIN32)
     add_sedona_scode(platWin32)
 endif()
+
+add_sedona_scode(test-mqtt)

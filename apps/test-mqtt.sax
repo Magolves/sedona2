@@ -1,0 +1,67 @@
+<?xml version='1.0'?>
+<sedonaApp>
+<schema>
+  <kit name='sys'/>
+  <kit name='sox'/>
+  <kit name='inet'/>
+  <kit name='web'/>
+  <kit name='pstore'/>
+  <kit name='datetime'/>
+  <kit name='datetimeStd'/>
+  <kit name='basicSchedule' />
+  <kit name='communityMQTT' />
+  <kit name='mqtteval' />
+
+  <!-- These replace control kit as of 1.2 -->
+  <kit name='func' />
+  <kit name='hvac' />
+  <kit name='logic' />
+  <kit name='math' />
+  <kit name='timing' />
+  <kit name='types' />
+</schema>
+<app>               
+  <prop name="appName" val="demo"/>
+  <!-- /service -->
+  <comp name="service" id="1" type="sys::Folder">
+    <prop name="meta" val="33685505"/>
+    <!-- /service/plat -->
+    <comp name="plat" type="sys::PlatformService"/>
+    <!-- /service/users -->
+    <comp name="users" id="3" type="sys::UserService">
+      <prop name="meta" val="17367041"/>
+      <!-- /service/users/admin -->
+      <comp name="admin" id="4" type="sys::User">
+        <prop name="cred" val="hE49ksThgAeLkWB3NUU1NWeDO54="/>
+        <prop name="perm" val="2147483647"/>
+        <prop name="prov" val="255"/>
+      </comp>
+    </comp>
+    <!-- /service/sox -->
+    <comp name="sox" id="5" type="sox::SoxService">
+      <prop name="meta" val="17104897"/>
+    </comp>
+    
+    <!-- /service/time -->
+    <comp name="time" type="datetimeStd::DateTimeServiceStd">
+      <prop name="osUtcOffset" val="true"/>
+    </comp>
+    <comp name="mqtt" type="communityMQTT::MQTTService">
+      <comp name="pub" type="communityMQTT::Publisher">
+	    <prop name="host" val="localhost"/>
+	    <prop name="clientid" val="eval"/>
+      </comp>      
+    </comp>
+  </comp>
+  <!-- /play -->
+  <comp name="mqtt" id="10" type="sys::Folder">
+    <!-- /play/rampA -->
+    <comp name="rampA" type="mqtteval::MqttComponent">
+      <prop name="meta" val="67371009"/>
+      <prop name="cv" val="20.00000"/>
+      <prop name="sp" val="25.00000"/>
+    </comp>    
+  </comp>
+</app>
+<links/>
+</sedonaApp>
