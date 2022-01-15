@@ -1,5 +1,5 @@
 # Verbose make for debugging
-set(CMAKE_VERBOSE_MAKEFILE OFF)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_BUILD_TYPE Debug)
 
 
@@ -8,7 +8,7 @@ SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
 SET(CMAKE_SHARED_LINK_FLAGS "${CMAKE_SHARED_LINK_FLAGS} -m32")
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m32")
 
-add_definitions(-D__UNIX__ -DPLAT_BUILD_VERSION="2.0.0" -DPLATFORM_ID="${CMAKE_SYSTEM}" -DSOCKET_FAMILY_INET)
+add_definitions(-D__UNIX__ -DPLAT_BUILD_VERSION=\\"2.0.0\\" -DPLATFORM_ID=\\"${CMAKE_SYSTEM}\\" -DSOCKET_FAMILY_INET)
 
 set(SRC
     communityMQTT_common.c
@@ -80,3 +80,5 @@ endif()
 add_executable(vmmq ${SRC})
 
 target_link_libraries(vmmq PRIVATE pthread)
+target_compile_options(vmmq PRIVATE -m32)
+target_link_options(vmmq PRIVATE -m32)
