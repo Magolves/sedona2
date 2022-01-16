@@ -1,0 +1,26 @@
+<!--
+  -  Sedona Kit
+  -  Copyright (c) 2007 Tridium, Inc.
+  -  Licensed under the Academic Free License version 3.0
+  -->
+
+<sedonaKit
+ name = "cbcmw"
+ vendor = "Olli"
+ description = "MQTT middleware"
+ includeSource = "true"  
+ doc = "true"
+>
+
+  <!-- Source Directories -->
+  <source dir="." />
+  <source dir="test" testonly="true"/>
+
+  <!-- Natives -->
+  <native qname="cbcmw::CbcMiddlewareService.startSession"    id="51::0"  />
+  <native qname="cbcmw::CbcMiddlewareService.stopSession"     id="51::1"  />
+  <native qname="cbcmw::CbcMiddlewareService.isSessionLive"   id="51::2"  />
+  <native qname="cbcmw::Message.regSlot" id="51::10"  />
+
+</sedonaKit>
+

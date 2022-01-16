@@ -1,0 +1,48 @@
+class CbcMiddlewareService extends Service
+{
+  ////////////////////////////////////////////////////////////////
+  // Life cycle
+  ////////////////////////////////////////////////////////////////
+
+  **
+  ** Init and start CBC middleware service 
+  **
+  virtual override void start()
+  {
+    log.message("Middleware service started")
+  }
+
+  ** 
+  ** stop middleware service
+  ** 
+  virtual override void stop()
+  {
+    log.message("middleware service stopped")
+  }
+
+  ////////////////////////////////////////////////////////////////
+  // Methods
+  ////////////////////////////////////////////////////////////////
+  // natives 
+  **
+  ** Start a middleware session to given host:port using clientid, username and password.
+  ** a session handle object will be returned, that will be used by later
+  ** native calls on this session.
+  ** 
+  static native Obj startSession(Str host, int port, Str clientid, Str username, Str password)
+
+  ** 
+  ** stop the middleware session for given session handle object
+  ** 
+  static native void stopSession(Obj handle)
+
+  ** 
+  ** check if session for given session handle object live or not 
+  ** 
+  static native bool isSessionLive(Obj handle)
+
+  ////////////////////////////////////////////////////////////////
+  // Fields
+  ////////////////////////////////////////////////////////////////
+  define Log log
+}

@@ -28,6 +28,7 @@ else()
     add_subdirectory(src/datetime)
     add_subdirectory(src/datetimeStd)
     add_subdirectory(src/sedona-mqtt)
+    add_subdirectory(src/cbcmw)
     add_subdirectory(src/mqtteval)
     if (COMPILE_KITS)
         add_subdirectory(src/func)
@@ -46,7 +47,7 @@ endif()
 add_subdirectory(platforms/src/generic/unix)
 
 set (VM_DIR ${CMAKE_SOURCE_DIR}/src/vm-test)
-set(PLATFORM_DEF platforms/src/generic/unix/generic-unix.xml)
+set(PLATFORM_DEF platforms/src/generic/unix/mqtt-unix.xml)
 
 message(STATUS "${SEDONA_CC} ARGS ${PLATFORM_DEF} -outDir ${VM_DIR}")
 
