@@ -20,7 +20,7 @@ function(add_sedona_app app_file)
     set(target_name app_${APP_NAME})
     message(STATUS "Add target ${target_name}/${APP_WD}/${APP_NAME_EXT}/${APP_NAME}")
     add_custom_target(${target_name} ALL 
-        ${SEDONA_CC} ${APP_NAME_EXT}.sax
+        ${SEDONA_CC} -layout ${APP_NAME_EXT}.sax
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${APP_WD}
         COMMENT "Sedona: Compile app ${APP_NAME} (${APP_NAME_EXT} in ${CMAKE_CURRENT_SOURCE_DIR}/${APP_WD})"
     )

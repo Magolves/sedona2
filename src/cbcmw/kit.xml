@@ -5,22 +5,24 @@
   -->
 
 <sedonaKit
- name = "cbcmw"
- vendor = "Olli"
+ name = "BoschMW"
+ vendor = "Bosch"
  description = "MQTT middleware"
- includeSource = "true"  
+ includeSource = "false"  
  doc = "true"
 >
+  <!-- Dependencies -->
+  <depend on="sys 1.2+" />
 
   <!-- Source Directories -->
   <source dir="." />
   <source dir="test" testonly="true"/>
 
   <!-- Natives -->
-  <native qname="cbcmw::CbcMiddlewareService.startSession"    id="51::0"  />
-  <native qname="cbcmw::CbcMiddlewareService.stopSession"     id="51::1"  />
-  <native qname="cbcmw::CbcMiddlewareService.isSessionLive"   id="51::2"  />
-  <native qname="cbcmw::Message.regSlot" id="51::10"  />
+  <native qname="BoschMW::CbcMiddlewareService.startSession"    id="51::0"  />
+  <native qname="BoschMW::CbcMiddlewareService.stopSession"     id="51::1"  />
+  <native qname="BoschMW::CbcMiddlewareService.isSessionLive"   id="51::2"  />
+  
 
 </sedonaKit>
 
