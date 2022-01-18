@@ -73,7 +73,7 @@ add_subdirectory(src/vm-staged)
 add_subdirectory(src/vm-mqtt)
 #add_subdirectory(src/vm-test)
 
-# Buold scode files
+# Build scode files
 add_subdirectory(scode)
 # Build the apps
 add_subdirectory(apps)
