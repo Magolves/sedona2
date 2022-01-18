@@ -10,9 +10,22 @@
 ```
 
 ```text
--- MESSAGE [sys::App] starting
--- MESSAGE [sox::SoxService] started port=1876
--- MESSAGE [sox::SoxService] DASP Discovery enabled
 -- MESSAGE [communityMQTT::MQTTService] MQTT service started
-21:23:04 INFO  /home/oliver/dev/sedona2/src/vm-mqtt/communityMQTT_Message.c:134: Register slot 0xf7f79188 (self=0x9ccbe00, qn=MqttComponent, n=cv, t=6, cb=0xf7f77010, db=0x9cc7700, off=0x4700 (18176))
+22:16:30 INFO  /home/oliver/dev/sedona2/src/vm-mqtt/communityMQTT_Message.c:136: Register slot 0xf7f9a188 (self=0x91f2e00, qn=MqttComponent, n=cv, t=6, cb=0xf7f98010 (off=0x2178), db=0x91ee700, (self-db)=0x4700 (18176), offset=0x30 (48))
+22:16:30 INFO  /home/oliver/dev/sedona2/src/vm-mqtt/communityMQTT_Worker.c:305:  * [MQTTService] MQTT worker thread started 91f18b0
+22:16:30 INFO  /home/oliver/dev/sedona2/src/vm-mqtt/communityMQTT_Message.c:141: Added slot to map 0xf7f9a188
+22:16:30 INFO  /home/oliver/dev/sedona2/src/vm-mqtt/communityMQTT_Message.c:136: Register slot 0xf7f9a180 (self=0x91f2e00, qn=MqttComponent, n=sp, t=6, cb=0xf7f98010 (off=0x2170), db=0x91ee700, (self-db)=0x4700 (18176), offset=0x2c (44))
+22:16:30 INFO  /home/oliver/dev/sedona2/src/vm-mqtt/communityMQTT_Message.c:141: Added slot to map 0xf7f9a180
+-- MESSAGE [sys::App] running
+```
+
+`Memory address = vm->dataBaseAddr + self.offset + offset`
+
+How is `self.offset' determined?
+
+```c
+void setByte(void* self, int offset, uint8_t val)
+{
+  *(((uint8_t*)self) + offset) = val;
+}
 ```
