@@ -8,6 +8,7 @@
 
 package sedonac.steps;
 
+import java.io.*;
 import java.util.*;
 import sedona.util.*;
 import sedonac.*;
@@ -46,7 +47,15 @@ public class FieldLayout
     findIrTypes();
     layoutInstanceFields();
     layoutStaticFields();
-    if (compiler.dumpLayout) dump();
+    if (compiler.dumpLayout) {
+      dump();
+    } else {
+      try {
+        save();
+      } catch(IOException ex) {
+        log.warn(ex.getMessage());
+      }
+    }
     quitIfErrors();
   }
 
@@ -364,13 +373,17 @@ public class FieldLayout
     {
       public int compare(Object a, Object b) { return a.toString().compareTo(b.toString()); }
     });
+
+    int offset = 0;
     for (int i=0; i<types.length; ++i)
     {
       IrType type = types[i];
       IrField[] ifields = type.instanceFields();
       if (ifields.length == 0) continue;
-      System.out.println("  --- " + type.qname + " [sizeof " + type.sizeof + "] ---");
+      System.out.println("  --- " + type.qname + " [sizeof " + type.sizeof + ", offset " + offset + "] ---");
       dumpFields(ifields);
+
+      offset += type.sizeof;
     }
 
     System.out.println("  --- static fields [dataSize " + compiler.dataSize + "] ---");
@@ -391,6 +404,127 @@ public class FieldLayout
     for (int i=0; i<fields.length; ++i)
       System.out.println("    " + TextUtil.pad(fields[i].offset + ": ", 5) + fields[i].qname);
   }
+
+  //////////////////////////////////////////////////////////////////////////
+// Save
+//////////////////////////////////////////////////////////////////////////
+
+private void save() throws IOException
+{
+  String layoutFileName = compiler.input.getName() + ".csv";
+  File layoutFile = new File(layoutFileName);
+  FileWriter w = new FileWriter(layoutFile);
+  compiler.log.info("Save layout to " + layoutFile.getAbsolutePath());
+  
+  IrType[] types = (IrType[])this.types.clone();
+  Arrays.sort(types, new Comparator()
+  {
+    public int compare(Object a, Object b) { return a.toString().compareTo(b.toString()); }
+  });
+
+  writeHeader(w);
+  for (int i=0; i<types.length; ++i)
+  {
+    IrType type = types[i];
+    if (type.isAbstract()) continue;
+    IrField[] ifields = type.instanceFields();
+    if (ifields.length == 0) continue;
+    
+    if (type.isArray()) {
+      w.write("A;");
+    } else {
+      w.write("T;");
+    }
+    // offset
+    w.write(";");
+    w.write("" + type.getBlockIndex());
+    w.write(";");
+    w.write("" + type.sizeof);
+    w.write(";");
+    if (type.isArray()) {
+      w.write(type.name + "[]");  
+    } else {
+      w.write(type.name);
+    }
+    w.write(";");
+    w.write("" + type.id);
+    w.write(";");
+    w.write(type.qname());
+    w.write(";");
+    // facets
+    w.write("\n");
+
+    writeFields(w, ifields);
+  }
+
+  //System.out.println("  --- static fields [dataSize " + compiler.dataSize + "] ---");
+  writeFields(w, flat.staticFields);
+  
+  w.close();    
+}
+
+private void writeHeader(FileWriter w) throws IOException
+{  
+    w.write("ItemType");
+    w.write(";");
+    w.write("Offset");
+    w.write(";");
+    w.write("BlockIndex");
+    w.write(";");
+    w.write("Size");
+    w.write(";");
+    w.write("Name");
+    w.write(";");
+    w.write("TypeId");
+    w.write(";");
+    w.write("Qualified name");
+    w.write(";");
+    w.write("Facets");
+    w.write("\n");
+}
+
+private void writeFields(FileWriter w, IrField[] fields) throws IOException
+{
+  Arrays.sort(fields, new Comparator()
+  {
+    public int compare(Object a, Object b)
+    {
+      return ((IrField)a).offset > ((IrField)b).offset ? 1 : -1;
+    }
+  });
+
+  for (int i=0; i<fields.length; ++i) {
+    if (fields[i].isStatic()) {
+      w.write("SF;");
+    } else {
+      w.write("IF;");
+    }
+    w.write("" + fields[i].offset);
+    w.write(";");
+    w.write("" + fields[i].offset);
+    w.write(";");
+    // size
+    w.write(";");
+    if(fields[i].type.isArray()) {
+      w.write(fields[i].type.qname());
+      w.write(";;");
+    } else {
+      w.write(fields[i].type.name());
+      w.write(";");
+      try {
+        w.write("" + fields[i].type.id());
+      } catch(IllegalStateException ex) {
+        w.write("?");
+      }
+    }
+    w.write(";");
+    w.write(fields[i].qname);
+    w.write(";");
+    w.write(fields[i].facets.toString());
+    w.write("\n");
+  }
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 // Fields
