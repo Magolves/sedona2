@@ -10,58 +10,39 @@
 //   3 Mar 07  Brian Frank  Creation
 //
 
-#include <Windows.h>
-#include <exception>
-#include <iostream>
-#include <jni.h>
 #include <stdio.h>
+#include <Windows.h>
+#include <jni.h>
 
-
-// Must contain full-qualified name of main Java class
 #ifndef LAUNCHER_MAIN
 #error "Must define LAUNCHER_MAIN"
-#endif
-
-// File name of the JAR file containing sedonac classes, e. g. 'sedonac.jar'
-#ifndef SEDONAC_JAR
-#error "Must define SEDONAC_JAR"
-#endif
-
-#ifndef KEY_WOW64_64KEY
-#define KEY_WOW64_64KEY (0x0100)
 #endif
 
 #ifndef LAUNCHER_VERSION
 #error "Must define LAUNCHER_VERSION"
 #endif
 
-#ifndef LAUNCHER_DATE
-#error "Must define LAUNCHER_DATE"
-#endif
-
 //////////////////////////////////////////////////////////////////////////
 // TypeDefs
 //////////////////////////////////////////////////////////////////////////
 
-typedef jint(JNICALL *CreateJavaVMFunc)(JavaVM **pvm, void **penv,
-                                        void *vm_args);
+typedef jint (JNICALL *CreateJavaVMFunc)(JavaVM **pvm, void **penv, void *vm_args);
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
 //////////////////////////////////////////////////////////////////////////
 
-// const char* LAUNCHER_VERSION = "28-Jan-13";
 
 bool debug;                        // is debug turned on
 char sedonaHome[MAX_PATH];         // dir path of sedona installation
 int sedonaArgc;                    // argument count to pass to Sedona runtime
-char **sedonaArgv;                 // argument values to pass to Sedona runtime
+char** sedonaArgv;                 // argument values to pass to Sedona runtime
 const int MAX_OPTIONS = 32;        // max number of Java options
 JavaVMOption options[MAX_OPTIONS]; // Java options to pass to create VM
 char jvmPath[MAX_PATH];            // path to jvm.dll to dynamically load
 int nOptions;                      // Number of options
-JavaVM *vm;                        // VM created
-JNIEnv *env;                       // JNI environment
+JavaVM* vm;                        // VM created
+JNIEnv* env;                       // JNI environment
 
 //////////////////////////////////////////////////////////////////////////
 // Error Utils
@@ -70,14 +51,15 @@ JNIEnv *env;                       // JNI environment
 /**
  * Print an error message and return -1.
  */
-int err(const char *msg, const char *arg1, const char *arg2) {
+int err(const char* msg, const char* arg1, const char* arg2)
+{
   printf("ERROR: ");
   printf(msg, arg1, arg2);
   printf("\n");
   return -1;
 }
-int err(const char *msg, const char *arg1) { return err(msg, arg1, "ignored"); }
-int err(const char *msg) { return err(msg, "ignored", "ignored"); }
+int err(const char* msg, const char* arg1) { return err(msg, arg1, "ignored"); }
+int err(const char* msg) { return err(msg, "ignored", "ignored"); }
 
 //////////////////////////////////////////////////////////////////////////
 // Registry Utils
@@ -86,29 +68,23 @@ int err(const char *msg) { return err(msg, "ignored", "ignored"); }
 /**
  * Read a registry string from HKEY_LOCAL_MACHINE.
  */
-int readRegistry(const char *subKey, char *name, char *buf, int bufLen) {
+int readRegistry(const char* subKey, char* name, char* buf, int bufLen)
+{
   // open key (try again as 64-bit key if first attempt fails)
   HKEY hKey;
-  if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subKey, 0, KEY_QUERY_VALUE, &hKey) !=
-      ERROR_SUCCESS)
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subKey, 0,
-                     KEY_QUERY_VALUE | KEY_WOW64_64KEY, &hKey) != ERROR_SUCCESS)
-      return err(
-          "[launcher] Cannot open registry key: HKEY_LOCAL_MACHINE\\%s.%s",
-          subKey, name);
+  if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subKey, 0, KEY_QUERY_VALUE, &hKey) != ERROR_SUCCESS)
+    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subKey, 0, KEY_QUERY_VALUE|KEY_WOW64_64KEY, &hKey) != ERROR_SUCCESS)
+      return err("[launcher] Cannot open registry key: HKEY_LOCAL_MACHINE\\%s.%s", subKey, name);
 
   // query
-  int query =
-      RegQueryValueEx(hKey, name, NULL, NULL, (LPBYTE)buf, (LPDWORD)&bufLen);
+  int query = RegQueryValueEx(hKey, name, NULL, NULL, (LPBYTE)buf, (LPDWORD)&bufLen);
 
   // close
   RegCloseKey(hKey);
 
   // return result
   if (query != ERROR_SUCCESS)
-    return err(
-        "[launcher] Cannot query registry key: HKEY_LOCAL_MACHINE\\%s.%s",
-        subKey, name);
+    return err("[launcher] Cannot query registry key: HKEY_LOCAL_MACHINE\\%s.%s", subKey, name);
 
   return 0;
 }
@@ -119,15 +95,15 @@ int readRegistry(const char *subKey, char *name, char *buf, int bufLen) {
 /**
  * Initialize the global variables for this process's environment.
  */
-int init(int argc, char **argv) {
+int init(int argc, char** argv)
+{
   // debug controlled by environment variable or --v argument
   debug = getenv("sedona_launcher_debug") != NULL;
-  for (int i = 1; i < argc; ++i)
-    if (strcmp(argv[i], "--v") == 0)
-      debug = true;
-  if (debug) {
-    printf("-- launcher version %s (%s)\n", LAUNCHER_VERSION, LAUNCHER_DATE);
-    for (int i = 0; i < argc; ++i)
+  for (int i=1; i<argc; ++i) if (strcmp(argv[i], "--v") == 0) debug = true;
+  if (debug)
+  {
+    printf("-- launcher version %s\n", LAUNCHER_VERSION);
+    for (int i=0; i<argc; ++i)
       printf("--   args[%d] = \"%s\"\n", i, argv[i]);
     printf("-- init\n");
   }
@@ -138,27 +114,12 @@ int init(int argc, char **argv) {
     return err("[launcher] GetModuleFileName");
 
   // walk up three levels of the path to get sedona home:
-  const char *sedonaHomeEnv = getenv("SEDONA_HOME");
-
-  if (sedonaHomeEnv != NULL) {
-    strncpy(sedonaHome, sedonaHomeEnv, MAX_PATH);
-  } else {
-    //   {sedonaHome}\bin\me.exe
-    int len = strlen(p);
-    for (; len > 0; len--)
-      if (p[len] == '\\') {
-        p[len] = '\0';
-        break;
-      }
-    for (; len > 0; len--)
-      if (p[len] == '\\') {
-        p[len] = '\0';
-        break;
-      }
-    strncpy(sedonaHome, p, MAX_PATH);
-  }
-  if (debug)
-    printf("--   sedonaHome = %s\n", sedonaHome);
+  //   {sedonaHome}\bin\me.exe
+  int len = strlen(p);
+  for (; len > 0; len--) if (p[len] == '\\') { p[len] = '\0'; break; }
+  for (; len > 0; len--) if (p[len] == '\\') { p[len] = '\0'; break; }
+  strcpy(sedonaHome, p);
+  if (debug) printf("--   sedonaHome = %s\n", sedonaHome);
 
   return 0;
 }
@@ -172,26 +133,30 @@ int init(int argc, char **argv) {
  * arguments used by the launcher itself (prefixed via --).  Note that
  * the --v debug is handled in init(), not this method.
  */
-int parseArgs(int argc, char **argv) {
-  if (debug)
-    printf("-- parseArgs\n");
+int parseArgs(int argc, char** argv)
+{
+  if (debug) printf("-- parseArgs\n");
 
   sedonaArgc = 0;
-  sedonaArgv = new char *[argc - 1];
+  sedonaArgv = new char*[argc-1];
 
-  for (int i = 1; i < argc; ++i) {
-    char *arg = argv[i];
+  for (int i=1; i<argc; ++i)
+  {
+    char* arg = argv[i];
     int len = strlen(arg);
 
     // if arg starts with --
-    if (len >= 3 && arg[0] == '-' && arg[1] == '-') {
+    if (len >= 3 && arg[0] == '-' && arg[1] == '-')
+    {
       // --v (already handled in init)
-      if (strcmp(arg, "--v") == 0) {
+      if (strcmp(arg, "--v") == 0)
+      {
         continue;
       }
 
       // --Dname=value
-      else if (arg[2] == 'D') {
+      else if (arg[2] == 'D')
+      {
         /*
         char* temp = new char[len];
         strcpy(temp, arg+3);
@@ -211,9 +176,10 @@ int parseArgs(int argc, char **argv) {
     sedonaArgv[sedonaArgc++] = arg;
   }
 
-  if (debug) {
+  if (debug)
+  {
     printf("--   sedonaArgs (%d)\n", sedonaArgc);
-    for (int i = 0; i < sedonaArgc; ++i)
+    for (int i=0; i<sedonaArgc; ++i)
       printf("--     [%d] %s\n", i, sedonaArgv[i]);
   }
 
@@ -224,25 +190,24 @@ int parseArgs(int argc, char **argv) {
 // Init Java VM
 //////////////////////////////////////////////////////////////////////////
 
-***Find the jvm.dll path to use by querying the registry.* / int findJvmPath() {
-  if (debug)
-    printf("-- findJvmPath\n");
+/**
+ * Find the jvm.dll path to use by querying the registry.
+ */
+int findJvmPath()
+{
+  if (debug) printf("-- findJvmPath\n");
 
   // query registry to get current Java version
-  const char *jreKey = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
+  const char* jreKey = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
   char curVer[MAX_PATH];
-  if (readRegistry(jreKey, "CurrentVersion", curVer, sizeof(curVer)))
-    return -1;
-  if (debug)
-    printf("--   registry query: CurrentVersion = %s\n", curVer);
+  if (readRegistry(jreKey, "CurrentVersion", curVer, sizeof(curVer))) return -1;
+  if (debug) printf("--   registry query: CurrentVersion = %s\n", curVer);
 
   // use curVer to get default jvm.dll to use
   char jvmKey[MAX_PATH];
   sprintf(jvmKey, "%s\\%s", jreKey, curVer);
-  if (readRegistry(jvmKey, "RuntimeLib", jvmPath, sizeof(jvmPath)))
-    return -1;
-  if (debug)
-    printf("--   registry query: RuntimeLib = %s\n", jvmPath);
+  if (readRegistry(jvmKey, "RuntimeLib", jvmPath, sizeof(jvmPath))) return -1;
+  if (debug) printf("--   registry query: RuntimeLib = %s\n", jvmPath);
 
   return 0;
 }
@@ -256,17 +221,13 @@ int parseArgs(int argc, char **argv) {
  * are the required options set by the launcher, plus any additional
  * options configured in sys.props.
  */
-int initOptions() {
-  if (debug)
-    printf("-- initOptions\n");
+int initOptions()
+{
+  if (debug) printf("-- initOptions\n");
 
   // predefined classpath
   static char optClassPath[MAX_PATH];
-  sprintf(optClassPath,
-          "-Djava.class.path=%s\\lib\\sedona.jar;%s\\lib\\%s.jar;%"
-          "s\\lib\\sedonacert.jar;%s\\lib\\plantuml.jar;%s\\lib",
-          sedonaHome, sedonaHome, SEDONAC_JAR, sedonaHome, sedonaHome,
-          sedonaHome);
+  sprintf(optClassPath, "-Djava.class.path=%s\\lib\\sedona.jar;%s\\lib\\sedonac.jar;%s\\lib\\sedonacert.jar", sedonaHome, sedonaHome, sedonaHome);
   options[nOptions++].optionString = optClassPath;
 
   // predefined sedona.home
@@ -275,9 +236,10 @@ int initOptions() {
   options[nOptions++].optionString = optHome;
 
   // debug
-  if (debug) {
+  if (debug)
+  {
     printf("--   options:\n");
-    for (int i = 0; i < nOptions; ++i)
+    for (int i=0; i<nOptions; ++i)
       printf("--     %s\n", options[i].optionString);
   }
 
@@ -291,36 +253,32 @@ int initOptions() {
 /**
  * Load the Java VM.
  */
-int loadJava() {
-  if (debug)
-    printf("-- loadJava\n");
+int loadJava()
+{
+  if (debug) printf("-- loadJava\n");
 
   // dynamically load jvm.dll
-  if (debug)
-    printf("--   load %s...\n", jvmPath);
+  if (debug) printf("--   load %s...\n", jvmPath);
   HINSTANCE dll = LoadLibrary(jvmPath);
   if (dll == NULL)
     return err("[launcher] Cannot load library: %s", jvmPath);
 
   // query for create VM procedure
-  if (debug)
-    printf("--   query procedure...\n");
-  CreateJavaVMFunc createVM =
-      (CreateJavaVMFunc)GetProcAddress(dll, "JNI_CreateJavaVM");
+  if (debug) printf("--   query procedure...\n");
+  CreateJavaVMFunc createVM = (CreateJavaVMFunc)GetProcAddress(dll, "JNI_CreateJavaVM");
   if (createVM == NULL)
     return err("[launcher] Cannot find JNI_CreateJavaVM in %s", jvmPath);
 
   // setup args
   JavaVMInitArgs vm_args;
-  vm_args.version = JNI_VERSION_1_6;
+  vm_args.version = JNI_VERSION_1_2;
   vm_args.options = options;
   vm_args.nOptions = nOptions;
   vm_args.ignoreUnrecognized = TRUE;
 
   // create vm
-  if (debug)
-    printf("--   create java vm...\n");
-  if (createVM(&vm, (void **)&env, &vm_args) < 0)
+  if (debug) printf("--   create java vm...\n");
+  if (createVM(&vm, (void**)&env, &vm_args) < 0)
     return err("[launcher] Cannot launch Java VM");
 
   return 0;
@@ -333,47 +291,36 @@ int loadJava() {
 /**
  * Find and invoke the Java runtime main.
  */
-int runJavaMain() {
-  if (debug)
-    printf("-- runJavaMain...\n");
+int runJavaMain()
+{
+  if (debug) printf("-- runJavaMain...\n");
 
   // figure out main
   char temp[256];
   sprintf(temp, "%s", LAUNCHER_MAIN);
-  const char *mainClassName = (const char *)temp;
+  const char* mainClassName = (const char*)temp;
 
   // find the main class
-  if (debug)
-    printf("--   find class %s...\n", mainClassName);
+  if (debug) printf("--   find class %s...\n", mainClassName);
+  jclass mainClass = env->FindClass(mainClassName);
+  if (mainClass == NULL)
+    return err("[launcher] Cannot find Java main %s", mainClassName);
 
-  try {
-    jclass mainClass = env->FindClass(mainClassName);
+  // find the main method
+  if (debug) printf("--   find method %s.main(String[])...\n", mainClassName);
+  jmethodID mainMethod = env->GetStaticMethodID(mainClass, "main", "([Ljava/lang/String;)V");
+  if (mainMethod == NULL)
+    return err("[launcher] Cannot find %s.main(String[])", mainClassName);
 
-    if (mainClass == NULL)
-      return err("[launcher] Cannot find Java main %s", mainClassName);
+  // map C string args to Java string args
+  if (debug) printf("--   c args to java args...\n");
+  jstring jstr = env->NewStringUTF("");
+  jobjectArray jargs = env->NewObjectArray(sedonaArgc, env->FindClass("java/lang/String"), jstr);
+  for (int i=0; i<sedonaArgc; ++i)
+    env->SetObjectArrayElement(jargs, i, env->NewStringUTF(sedonaArgv[i]));
 
-    // find the main method
-    if (debug)
-      printf("--   find method %s.main(String[])...\n", mainClassName);
-    jmethodID mainMethod =
-        env->GetStaticMethodID(mainClass, "main", "([Ljava/lang/String;)V");
-    if (mainMethod == NULL)
-      return err("[launcher] Cannot find %s.main(String[])", mainClassName);
-
-    // map C string args to Java string args
-    if (debug)
-      printf("--   c args to java args...\n");
-    jstring jstr = env->NewStringUTF("");
-    jobjectArray jargs = env->NewObjectArray(
-        sedonaArgc, env->FindClass("java/lang/String"), jstr);
-    for (int i = 0; i < sedonaArgc; ++i)
-      env->SetObjectArrayElement(jargs, i, env->NewStringUTF(sedonaArgv[i]));
-
-    // invoke main
-    env->CallStaticVoidMethod(mainClass, mainMethod, jargs);
-  } catch (std::exception &e) {
-    std::cout << e.what();
-  }
+  // invoke main
+  env->CallStaticVoidMethod(mainClass, mainMethod, jargs);
 
   return 0;
 }
@@ -382,18 +329,13 @@ int runJavaMain() {
 // Main
 //////////////////////////////////////////////////////////////////////////
 
-int main(int argc, char **argv) {
-  if (init(argc, argv))
-    return -1;
-  if (parseArgs(argc, argv))
-    return -1;
-  if (findJvmPath())
-    return -1;
-  if (initOptions())
-    return -1;
-  if (loadJava())
-    return -1;
-  if (runJavaMain())
-    return -1;
+int main(int argc, char** argv)
+{
+  if (init(argc, argv)) return -1;
+  if (parseArgs(argc, argv)) return -1;
+  if (findJvmPath())  return -1;
+  if (initOptions())  return -1;
+  if (loadJava())     return -1;
+  if (runJavaMain())  return -1;
   return 0;
 }

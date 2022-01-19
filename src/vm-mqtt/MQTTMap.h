@@ -1,6 +1,6 @@
 
-#ifndef MQTT_MAP_H
-#define MQTT_MAP_H
+#ifndef MQTTMAP_H
+#define MQTTMAP_H
 
 #include "uthash.h"
 
@@ -18,4 +18,4 @@ struct mqtt_slot_entry {
 void mqtt_add_slot_entry(void *session, int slot, uint8_t tid, int16_t *path);
 struct mqtt_slot_entry *mqtt_find_slot_entry(int slot);
 
-#endif
+#endif /* MQTTMAP_H */
