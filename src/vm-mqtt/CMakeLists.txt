@@ -1,5 +1,5 @@
 # Verbose make for debugging
-set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE Off)
 set(CMAKE_BUILD_TYPE Debug)
 
 

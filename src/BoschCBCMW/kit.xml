@@ -13,11 +13,11 @@
 >
   <!-- Dependencies -->
   <depend on="sys 1.2+" />
+  <depend on="datetimeStd 1.0+" />
 
   <!-- Source Directories -->
   <source dir="." />
-  <source dir="test" testonly="true"/>
-
+  
   <!-- Natives -->
   <native qname="BoschMW::CbcMiddlewareService.startSession"    id="51::0"  />
   <native qname="BoschMW::CbcMiddlewareService.stopSession"     id="51::1"  />
