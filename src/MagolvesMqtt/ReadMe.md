@@ -39,8 +39,6 @@ mosquitto_disconnect(mosq);
 mosquitto_loop_stop(mosq);
 ```
 
-
-
 ## JSON
 
 - [JSON examples](<https://kezunlin.me/post/f3c3eb8/>)
@@ -49,3 +47,60 @@ mosquitto_loop_stop(mosq);
 
 - [Logging with Python](<http://www.steves-internet-guide.com/simple-python-mqtt-data-logger/>)
 - [MQTT Explorer](<https://mqtt-explorer.com/>)
+
+
+## Linux
+### Build the VM on Linux
+
+For Sedona `libmosquitto` needs to be build as 32bit-library (and sacrifice some features)
+
+In the top level `CmakeLists.txt` add linker and compile flag `-m32`
+
+```cmake
+# ...
+option(DOCUMENTATION "Build documentation?" OFF)
+
+# Compile and link 32bit library
+add_link_options(-m32)
+add_compile_options(-m32)
+
+add_subdirectory(lib)
+if (WITH_CLIENTS)
+# ...
+```
+
+```bash
+# Install openSSL libs for 32bit
+$sudo apt install openssl:i386 libssl-dev:i386
+$cmake .. -B . -DWITH_TLS=Off -DWITH_CLIENTS=Off -DWITH_BROKER=Off -DWITH_PLUGINS=Off -DWITH_APPS=Off -DCMAKE_INSTALL_PREFIX=~/dev/mosquitto/i386
+```
+
+Add the install path to the library search path
+
+```bash
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:~/dev/mosquitto/i386/lib"
+```
+
+and update library cache
+
+```bash
+$sudo ldconfig
+```
+
+Then the VM should run
+
+```bash
+$svm-mqtt scode/platUnix.scode apps/unix/platUnix.sab
+
+Sedona VM 2.0.0
+buildDate: Jan 20 2022 23:27:10
+endian:    little
+blockSize: 4
+refSize:   4
+
+-- MESSAGE [sys::App] starting
+-- MESSAGE [sox::SoxService] started port=1876
+-- MESSAGE [sox::SoxService] DASP Discovery enabled
+-- MESSAGE [web::WebService] started port=8080
+-- MESSAGE [sys::App] running
+```

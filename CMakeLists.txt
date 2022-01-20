@@ -87,7 +87,8 @@ else()
     )
     
     if (UNIX)
-        add_subdirectory(src/vm-mqtt)
+        add_subdirectory(src/vm-unix)
+        add_subdirectory(src/vm-unix-community-mqtt)
     endif()
 endif()
 
