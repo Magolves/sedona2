@@ -53,6 +53,11 @@ class CbcMiddlewareService extends Service
   ** 
   static native bool isSessionLive(Obj handle)
 
+  ** 
+  ** Get the connection state
+  ** 
+  static native int getStatus()
+
   ////////////////////////////////////////////////////////////////
   // Fields
   ////////////////////////////////////////////////////////////////

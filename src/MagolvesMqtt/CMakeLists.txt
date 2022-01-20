@@ -1,2 +1,2 @@
-add_sedona_kit(cbcmw)
+add_sedona_kit(mqtt-mosquitto)
 
