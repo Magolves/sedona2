@@ -96,10 +96,14 @@ Cell cbcmw_CbcMiddlewareService_startSession(SedonaVM *vm, Cell *params) {
   if (!mosq) {
     status = STATUS_INTERNAL_ERROR;
   } else {
-    mosquitto_log_callback_set(mosq, mqtt_log_callback);
+    // Set MQTT protocol version to 5
+    mosquitto_int_option(mosq, MOSQ_OPT_PROTOCOL_VERSION, MQTT_PROTOCOL_V5);
+    // Specify example last will (must be done before connect)
+    mosquitto_will_set_v5(mosq, "last/Will", 0, NULL, 0, false, NULL);
 
-    mosquitto_connect_callback_set(mosq, mqtt_connect_callback);
-    mosquitto_disconnect_callback_set(mosq, mqtt_disconnect_callback);
+    mosquitto_log_callback_set(mosq, mqtt_log_callback);
+    mosquitto_connect_v5_callback_set(mosq, mqtt_connect_callback_v5);
+    mosquitto_disconnect_v5_callback_set(mosq, mqtt_disconnect_callback_v5);
 
     mosquitto_loop_start(mosq);
     if (rc != MOSQ_ERR_SUCCESS) {
@@ -140,7 +144,7 @@ Cell cbcmw_CbcMiddlewareService_stopSession(SedonaVM *vm, Cell *params) {
   if (!mosq)
     return falseCell;
 
-  mosquitto_disconnect(mosq);
+  mosquitto_disconnect_v5(mosq, MQTT_RC_DISCONNECT_WITH_WILL_MSG, NULL);
 
   return trueCell;
 }
