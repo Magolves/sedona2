@@ -1,6 +1,18 @@
 class CbcMiddlewareService extends Service
 {
   ////////////////////////////////////////////////////////////////
+  // Properties
+  ////////////////////////////////////////////////////////////////
+  @config @asStr property Buf(64) host
+  @config property int port = 1883
+
+  @config @asStr property Buf(16) clientid
+  @config @asStr property Buf(16) username
+  @config @asStr property Buf(16) password
+  
+  @config property bool autoStart = true
+
+  ////////////////////////////////////////////////////////////////
   // Life cycle
   ////////////////////////////////////////////////////////////////
 
@@ -40,6 +52,11 @@ class CbcMiddlewareService extends Service
   ** check if session for given session handle object live or not 
   ** 
   static native bool isSessionLive(Obj handle)
+
+  ** 
+  ** Get the connection state
+  ** 
+  static native int getStatus()
 
   ////////////////////////////////////////////////////////////////
   // Fields
