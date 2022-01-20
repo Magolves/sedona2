@@ -28,7 +28,7 @@ endfunction()
 
 function(add_sedona_scode scode_name)
     add_custom_target(scode_${scode_name} ALL 
-        ${SEDONA_CC} -layout ${scode_name}.xml
+        ${SEDONA_CC} ${scode_name}.xml
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMENT "Sedona: Compile scode ${scode_name}"
     )
