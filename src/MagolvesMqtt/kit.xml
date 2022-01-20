@@ -5,8 +5,8 @@
   -->
 
 <sedonaKit
- name = "BoschMW"
- vendor = "Bosch"
+ name = "MagolvesMqtt"
+ vendor = "Magolves"
  description = "MQTT middleware"
  includeSource = "false"  
  doc = "true"
@@ -20,9 +20,9 @@
   <source dir="." />
   
   <!-- Natives -->
-  <native qname="BoschMW::CbcMiddlewareService.startSession"    id="51::0"  />
-  <native qname="BoschMW::CbcMiddlewareService.stopSession"     id="51::1"  />
-  <native qname="BoschMW::CbcMiddlewareService.isSessionLive"   id="51::2"  />
+  <native qname="MagolvesMqtt::CbcMiddlewareService.startSession"    id="51::0"  />
+  <native qname="MagolvesMqtt::CbcMiddlewareService.stopSession"     id="51::1"  />
+  <native qname="MagolvesMqtt::CbcMiddlewareService.isSessionLive"   id="51::2"  />
   
 
 </sedonaKit>
