@@ -40,67 +40,8 @@ void mqtt_connect_callback_v5(struct mosquitto *mosq, void *obj, int result,
 
   // connack_result = result;
 
-  if (!result) {
-    /*
-            switch(cfg.pub_mode){
-                    case MSGMODE_CMD:
-                    case MSGMODE_FILE:
-                    case MSGMODE_STDIN_FILE:
-                            //rc = my_publish(mosq, &mid_sent, cfg.topic,
-       cfg.msglen, cfg.message, cfg.qos, cfg.retain); break; case MSGMODE_NULL:
-                            rc = my_publish(mosq, &mid_sent, cfg.topic, 0, NULL,
-       cfg.qos, cfg.retain); break; case MSGMODE_STDIN_LINE: status =
-       STATUS_CONNACK_RECVD; break;
-            }*/
-    if (rc) {
-      /*
-    switch (rc) {
-    case MOSQ_ERR_INVAL:
-      err_printf(
-          &cfg,
-          "Error: Invalid input. Does your topic contain '+' or '#'?\n");
-      break;
-    case MOSQ_ERR_NOMEM:
-      err_printf(&cfg,
-                 "Error: Out of memory when trying to publish message.\n");
-      break;
-    case MOSQ_ERR_NO_CONN:
-      err_printf(&cfg,
-                 "Error: Client not connected when trying to publish.\n");
-      break;
-    case MOSQ_ERR_PROTOCOL:
-      err_printf(&cfg,
-                 "Error: Protocol error when communicating with broker.\n");
-      break;
-    case MOSQ_ERR_PAYLOAD_SIZE:
-      err_printf(&cfg, "Error: Message payload is too large.\n");
-      break;
-    case MOSQ_ERR_QOS_NOT_SUPPORTED:
-      err_printf(
-          &cfg,
-          "Error: Message QoS not supported on broker, try a lower QoS.\n");
-      break;
-    }
-    */
-      mosquitto_disconnect_v5(mosq, 0, /*cfg.disconnect_props*/ NULL);
-    }
-  } else {
-    if (result) {
-      /*
-                  if(cfg.protocol_version == MQTT_PROTOCOL_V5){
-                          if(result == MQTT_RC_UNSUPPORTED_PROTOCOL_VERSION){
-                                  err_printf(&cfg, "Connection error: %s. Try
-         connecting to an MQTT v5 broker, or use MQTT v3.x mode.\n",
-         mosquitto_reason_string(result)); }else{ err_printf(&cfg, "Connection
-         error: %s\n", mosquitto_reason_string(result));
-                          }
-                  }else{
-                          err_printf(&cfg, "Connection error: %s\n",
-         mosquitto_connack_string(result));
-                  }*/
-      /* let the loop know that this is an unrecoverable connection */
-      status = STATUS_NOHOPE;
-    }
+  if (result) {
+    mosquitto_disconnect_v5(mosq, 0, /*cfg.disconnect_props*/ NULL);
   }
 }
 
@@ -127,6 +68,18 @@ void mqtt_disconnect_callback(struct mosquitto *mosq, void *obj, int rc) {
 ///////////////////////////////////////////////////////
 // Native Method Slots
 ///////////////////////////////////////////////////////
+
+/// @brief Starts the MQTT session expecting the following content
+/// - param[0]: Host name or IP (const char*)
+/// - param[1]: Port (int)
+/// - param[2]: Client name (const char* - may be NULL to use a generated ID
+/// string)
+/// - param[3]: User name (const char* - may be NULL if no auth s required)
+/// - param[4]: Password (const char*)
+///
+/// @param vm the VM instance
+/// @param params the paramater array
+/// @return Cell trueCell, if successful
 Cell cbcmw_CbcMiddlewareService_startSession(SedonaVM *vm, Cell *params) {
   char *host = params[0].aval;
   int32_t port = params[1].ival;
@@ -141,33 +94,33 @@ Cell cbcmw_CbcMiddlewareService_startSession(SedonaVM *vm, Cell *params) {
 
   mosq = mosquitto_new(MW_CLIENT_NAME, MW_CLEAN_SESSION, NULL);
   if (!mosq) {
-    /*
-            switch(errno){
-                    case ENOMEM:
-                            err_printf(&cfg, "Error: Out of memory.\n");
-                            break;
-                    case EINVAL:
-                            err_printf(&cfg, "Error: Invalid id.\n");
-                            break;
-            }
-            goto cleanup;
-    */
     status = STATUS_INTERNAL_ERROR;
   } else {
     mosquitto_log_callback_set(mosq, mqtt_log_callback);
 
     mosquitto_connect_callback_set(mosq, mqtt_connect_callback);
     mosquitto_disconnect_callback_set(mosq, mqtt_disconnect_callback);
-    /*
+
     mosquitto_loop_start(mosq);
-    mosquitto_connect_async(mosq, host, port, -1);
-    */
-    rc = mosquitto_connect(mosq, host, port, 60);
     if (rc != MOSQ_ERR_SUCCESS) {
       if (rc == MOSQ_ERR_INVAL) {
-        printf("ERROR: Invalid parameters %s (%d)\n", host, port);
+        printf("mosquitto_loop_start: Invalid parameters %s (%d)\n", host,
+               port);
       } else {
-        printf("ERROR: Illegal call (rc = %d)\n", rc);
+        printf("mosquitto_loop_start: Illegal call (rc = %d)\n", rc);
+      }
+    } else {
+      status = STATUS_CONNECTING;
+      rc = mosquitto_connect_async(mosq, host, port, 60);
+      if (rc != MOSQ_ERR_SUCCESS) {
+        if (rc == MOSQ_ERR_INVAL) {
+          printf("mosquitto_connect_async: Invalid parameters %s (%d)\n", host,
+                 port);
+        } else {
+          printf("mosquitto_connect_async: Illegal call (rc = %d)\n", rc);
+        }
+      } else {
+        status = STATUS_WAITING;
       }
     }
   }
@@ -177,6 +130,11 @@ Cell cbcmw_CbcMiddlewareService_startSession(SedonaVM *vm, Cell *params) {
   return result;
 }
 
+/// @brief Stop the MQTT session.
+///
+/// @param vm the VM instance
+/// @param params the paramater array
+/// @return Cell trueCell, if successful
 Cell cbcmw_CbcMiddlewareService_stopSession(SedonaVM *vm, Cell *params) {
   struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
   if (!mosq)
@@ -184,9 +142,14 @@ Cell cbcmw_CbcMiddlewareService_stopSession(SedonaVM *vm, Cell *params) {
 
   mosquitto_disconnect(mosq);
 
-  return nullCell;
+  return trueCell;
 }
 
+/// @brief Checks if MQTT session is alive.
+///
+/// @param vm the VM instance
+/// @param params the paramater array
+/// @return Cell trueCell, if session is alive/connected
 Cell cbcmw_CbcMiddlewareService_isSessionLive(SedonaVM *vm, Cell *params) {
   struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
   if (!mosq)
@@ -195,6 +158,12 @@ Cell cbcmw_CbcMiddlewareService_isSessionLive(SedonaVM *vm, Cell *params) {
   return (status == STATUS_WAITING) ? trueCell : falseCell;
 }
 
+/// @brief Executes a single MQTT loop. Can only be used if mosquitto is
+/// operated synchronously.
+///
+/// @param vm the VM instance
+/// @param params the paramater array
+/// @return Cell the result
 Cell cbcmw_CbcMiddlewareService_execute(SedonaVM *vm, Cell *params) {
   struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
 

@@ -20,6 +20,7 @@ if (rc != MOSQ_ERR_SUCCESS) {
     printf("ERROR: Illegal call (rc = %d)\n", rc);
     }
 }
+
 ```
 
 #### Asynchronous
