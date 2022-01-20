@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <time.h>
 
-const struct timespec SLEEP = {1, 0}; // 1s
+const struct timespec SLEEP = {5, 0}; // 1s
 
 char *HOST = "localhost";
 
@@ -24,7 +24,7 @@ int main(int argc, const char *argv[]) {
     return 1;
   }
 
-  for (int i = 0; i < 62; i++) {    
+  for (int i = 0; i < 13; i++) {
     nanosleep(&SLEEP, &rem);
 
     if (cbcmw_CbcMiddlewareService_isSessionLive(NULL, &mosq).ival ==

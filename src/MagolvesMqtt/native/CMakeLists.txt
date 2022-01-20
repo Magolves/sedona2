@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS On)
 
-add_executable(cbcmw mqtt_client.c local/main.c sedona/vmstub.c)
+add_executable(cbcmw mqtt_client.c mqtt_callbacks.c constants.c local/main.c sedona/vmstub.c)
 
 target_link_libraries(cbcmw PUBLIC mosquitto)
 target_include_directories(cbcmw PRIVATE sedona .)
