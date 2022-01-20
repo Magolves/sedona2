@@ -30,8 +30,8 @@ void mqtt_log_callback(struct mosquitto *mosq, void *obj, int level,
   printf("%s\n", str);
 }
 
-void mqtt_connect_callback(struct mosquitto *mosq, void *obj, int result,
-                           int flags, const mosquitto_property *properties) {
+void mqtt_connect_callback_v5(struct mosquitto *mosq, void *obj, int result,
+                              int flags, const mosquitto_property *properties) {
   int rc = MOSQ_ERR_SUCCESS;
 
   UNUSED(obj);
@@ -104,8 +104,12 @@ void mqtt_connect_callback(struct mosquitto *mosq, void *obj, int result,
   }
 }
 
-void mqtt_disconnect_callback(struct mosquitto *mosq, void *obj, int rc,
-                              const mosquitto_property *properties) {
+void mqtt_connect_callback(struct mosquitto *mosq, void *obj, int result) {
+  mqtt_connect_callback_v5(mosq, obj, result, 0, NULL);
+}
+
+void mqtt_disconnect_callback_v5(struct mosquitto *mosq, void *obj, int rc,
+                                 const mosquitto_property *properties) {
   UNUSED(mosq);
   UNUSED(obj);
   UNUSED(rc);
@@ -114,6 +118,10 @@ void mqtt_disconnect_callback(struct mosquitto *mosq, void *obj, int rc,
   if (rc == 0) {
     status = STATUS_DISCONNECTED;
   }
+}
+
+void mqtt_disconnect_callback(struct mosquitto *mosq, void *obj, int rc) {
+  mqtt_disconnect_callback_v5(mosq, obj, rc, NULL);
 }
 
 ///////////////////////////////////////////////////////
@@ -147,8 +155,21 @@ Cell cbcmw_CbcMiddlewareService_startSession(SedonaVM *vm, Cell *params) {
     status = STATUS_INTERNAL_ERROR;
   } else {
     mosquitto_log_callback_set(mosq, mqtt_log_callback);
-    mosquitto_connect_v5_callback_set(mosq, mqtt_connect_callback);
-    mosquitto_disconnect_v5_callback_set(mosq, mqtt_disconnect_callback);
+
+    mosquitto_connect_callback_set(mosq, mqtt_connect_callback);
+    mosquitto_disconnect_callback_set(mosq, mqtt_disconnect_callback);
+    /*
+    mosquitto_loop_start(mosq);
+    mosquitto_connect_async(mosq, host, port, -1);
+    */
+    rc = mosquitto_connect(mosq, host, port, 60);
+    if (rc != MOSQ_ERR_SUCCESS) {
+      if (rc == MOSQ_ERR_INVAL) {
+        printf("ERROR: Invalid parameters %s (%d)\n", host, port);
+      } else {
+        printf("ERROR: Illegal call (rc = %d)\n", rc);
+      }
+    }
   }
 
   Cell result;
@@ -161,7 +182,7 @@ Cell cbcmw_CbcMiddlewareService_stopSession(SedonaVM *vm, Cell *params) {
   if (!mosq)
     return falseCell;
 
-  mosquitto_disconnect_v5(mosq, 0, /*cfg.disconnect_props*/ NULL);
+  mosquitto_disconnect(mosq);
 
   return nullCell;
 }
@@ -172,4 +193,18 @@ Cell cbcmw_CbcMiddlewareService_isSessionLive(SedonaVM *vm, Cell *params) {
     return falseCell;
 
   return (status == STATUS_WAITING) ? trueCell : falseCell;
+}
+
+Cell cbcmw_CbcMiddlewareService_execute(SedonaVM *vm, Cell *params) {
+  struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
+
+  // Parameters
+  // - mosq	a valid mosquitto instance.
+  // - timeout	Maximum number of milliseconds to wait for network activity in
+  // the select() call before timing out.  Set to 0 for instant return.  Set
+  // negative to use the default of 1000ms.
+  // - max_packets	this parameter is currently unused and should be set to
+  // 1 for future compatibility.
+  mosquitto_loop(mosq, -1, 1);
+  return trueCell;
 }

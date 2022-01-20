@@ -1,5 +1,5 @@
 #include "sedona.h"
 
-Cell zeroCell;   // Cell constant for false, 0, 0.0f, and NULL
-Cell oneCell;    // Cell constant for true, 1
-Cell negOneCell; // Cell constant for -1
+Cell zeroCell = {0};    // Cell constant for false, 0, 0.0f, and NULL
+Cell oneCell = {1};     // Cell constant for true, 1
+Cell negOneCell = {-1}; // Cell constant for -1
