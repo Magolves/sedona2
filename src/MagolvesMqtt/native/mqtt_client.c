@@ -60,7 +60,8 @@ void mqtt_client_set_status(enum MqttConnectionState new_status) {
 /// @param vm the VM instance
 /// @param params the paramater array
 /// @return Cell trueCell, if successful
-Cell cbcmw_CbcMiddlewareService_startSession(SedonaVM *vm, Cell *params) {
+Cell MagolvesMqtt_CbcMiddlewareService_startSession(SedonaVM *vm,
+                                                    Cell *params) {
   char *host = params[0].aval;
   int32_t port = params[1].ival;
   char *clientid = params[2].aval;
@@ -123,7 +124,7 @@ Cell cbcmw_CbcMiddlewareService_startSession(SedonaVM *vm, Cell *params) {
 /// @param vm the VM instance
 /// @param params the paramater array
 /// @return Cell trueCell, if successful
-Cell cbcmw_CbcMiddlewareService_stopSession(SedonaVM *vm, Cell *params) {
+Cell MagolvesMqtt_CbcMiddlewareService_stopSession(SedonaVM *vm, Cell *params) {
   struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
   if (!mosq)
     return falseCell;
@@ -140,7 +141,8 @@ Cell cbcmw_CbcMiddlewareService_stopSession(SedonaVM *vm, Cell *params) {
 /// @param vm the VM instance
 /// @param params the paramater array
 /// @return Cell trueCell, if session is alive/connected
-Cell cbcmw_CbcMiddlewareService_isSessionLive(SedonaVM *vm, Cell *params) {
+Cell MagolvesMqtt_CbcMiddlewareService_isSessionLive(SedonaVM *vm,
+                                                     Cell *params) {
   struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
   if (!mosq)
     return falseCell;
@@ -153,7 +155,7 @@ Cell cbcmw_CbcMiddlewareService_isSessionLive(SedonaVM *vm, Cell *params) {
 /// @param vm the VM instance
 /// @param params the paramater array
 /// @return Cell the connection status in ival
-Cell cbcmw_CbcMiddlewareService_getStatus(SedonaVM *vm, Cell *params) {
+Cell MagolvesMqtt_CbcMiddlewareService_getStatus(SedonaVM *vm, Cell *params) {
   Cell result = {status};
   return result;
 }
@@ -164,7 +166,7 @@ Cell cbcmw_CbcMiddlewareService_getStatus(SedonaVM *vm, Cell *params) {
 /// @param vm the VM instance
 /// @param params the paramater array
 /// @return Cell the result
-Cell cbcmw_CbcMiddlewareService_execute(SedonaVM *vm, Cell *params) {
+Cell MagolvesMqtt_CbcMiddlewareService_execute(SedonaVM *vm, Cell *params) {
   struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
 
   // Parameters
@@ -178,7 +180,7 @@ Cell cbcmw_CbcMiddlewareService_execute(SedonaVM *vm, Cell *params) {
   return trueCell;
 }
 
-Cell cbcmw_CbcMiddlewareService_exportSlot(SedonaVM *vm, Cell *params) {
+Cell MagolvesMqtt_CbcMiddlewareService_exportSlot(SedonaVM *vm, Cell *params) {
   struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
   uint8_t *self = params[1].aval;
   void *slot = params[2].aval;
