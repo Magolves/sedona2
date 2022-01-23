@@ -4,7 +4,7 @@
 
 static struct mqtt_slot_entry *entries = NULL;
 
-void mqtt_add_slot_entry(uint16_t offset, uint8_t tid, uint8_t sid,
+void mqtt_add_slot_entry(MQTT_SLOT_KEY_TYPE offset, uint8_t tid, uint8_t sid,
                          int16_t *path) {
   struct mqtt_slot_entry *s;
 
@@ -16,11 +16,11 @@ void mqtt_add_slot_entry(uint16_t offset, uint8_t tid, uint8_t sid,
     s->tid = tid;
     memcpy(s->path, path, sizeof(int16_t) * MAX_PATH_LEN);
 
-    HASH_ADD_INT(entries, slot, s); /* slot: name of key field */
+    HASH_ADD_INT(entries, offset, s); /* slot: name of key field */
   }
 }
 
-struct mqtt_slot_entry *mqtt_find_slot_entry(uint16_t offset) {
+struct mqtt_slot_entry *mqtt_find_slot_entry(MQTT_SLOT_KEY_TYPE offset) {
   struct mqtt_slot_entry *s;
 
   HASH_FIND_INT(entries, &offset, s); /* s: output pointer */

@@ -193,25 +193,38 @@ Cell MagolvesMqtt_CbcMiddlewareService_exportSlot(SedonaVM *vm, Cell *params) {
   uint16_t typeId = getTypeId(vm, getSlotType(vm, slot));
   uint16_t offset = getSlotHandle(vm, slot);
 
+  Cell key = MagolvesMqtt_CbcMiddlewareService_computeSlotKey(vm, params);
+
   void *type = getCompType(vm, self);
   const char *typeName = getTypeName(vm, type);
 
-  log_info("Register slot %p (self=%p, qn=%s, n=%s, t=%d, cb=%p (off=0x%x, "
-           "%ld), db=%p, "
-           "(self-db)=0x%x (%d), offset=0x%x (%d))",
-           slot, self, typeName, getSlotName(vm, slot), typeId,
-           vm->codeBaseAddr, ((uint8_t *)slot) - vm->codeBaseAddr,
-           ((uint8_t *)slot) - vm->codeBaseAddr, vm->dataBaseAddr,
-           self - vm->dataBaseAddr, self - vm->dataBaseAddr, offset, offset);
+  log_info("Register slot %p \n\t((k=0x%x), self=%p, qn=%s, n=%s, t=%d, off=%d "
+           "(0x%x)",
+           slot, (MQTT_SLOT_KEY_TYPE)slot, self, typeName,
+           getSlotName(vm, slot), typeId, offset, offset);
 
-  mqtt_add_slot_entry(offset, 0, typeId, paths);
+  mqtt_add_slot_entry((MQTT_SLOT_KEY_TYPE)slot, 0, typeId, paths);
   log_info("Added slot to map %p", slot);
+
+  return trueCell;
 }
 
 void changeListener(SedonaVM *vm, uint8_t *comp, void *slot) {
-  log_info("Check slot to map %p", slot);
-  struct mqtt_slot_entry *se = mqtt_find_slot_entry((int)slot);
+  log_info("Check slot to map s=%p (0x%x)", slot, (MQTT_SLOT_KEY_TYPE)slot);
+  struct mqtt_slot_entry *se = mqtt_find_slot_entry((MQTT_SLOT_KEY_TYPE)slot);
   if (se != NULL) {
-    // log_info("Publish slot %s\n", getSlotName(vm, slot));
+    log_info("Publish slot %s\n", getSlotName(vm, slot));
   }
+}
+
+Cell MagolvesMqtt_CbcMiddlewareService_computeSlotKey(SedonaVM *vm,
+                                                      Cell *params) {
+
+  uint8_t *self = params[1].aval;
+  void *slot = params[2].aval;
+  uint16_t offset = getSlotHandle(vm, slot);
+
+  Cell result;
+  result.ival = (self - vm->dataBaseAddr) + offset;
+  return result;
 }

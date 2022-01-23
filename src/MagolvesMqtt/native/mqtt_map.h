@@ -6,8 +6,10 @@
 
 #define MAX_PATH_LEN 5
 
+#define MQTT_SLOT_KEY_TYPE int
+
 struct mqtt_slot_entry {
-  uint16_t offset;
+  MQTT_SLOT_KEY_TYPE offset;
   uint8_t tid; /* key */
   uint8_t slot;
   int16_t path[MAX_PATH_LEN];
@@ -19,9 +21,9 @@ struct mqtt_slot_entry {
 /// @param tid the type id
 /// @param sid the slot number within the Sedona component
 /// @param path
-void mqtt_add_slot_entry(uint16_t offset, uint8_t tid, uint8_t sid,
+void mqtt_add_slot_entry(MQTT_SLOT_KEY_TYPE offset, uint8_t tid, uint8_t sid,
                          int16_t *path);
 
-struct mqtt_slot_entry *mqtt_find_slot_entry(uint16_t offset);
+struct mqtt_slot_entry *mqtt_find_slot_entry(MQTT_SLOT_KEY_TYPE offset);
 
 #endif /* MQTT_MAP */

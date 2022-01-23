@@ -14,5 +14,8 @@ Cell MagolvesMqtt_CbcMiddlewareService_getStatus(SedonaVM *vm, Cell *params);
 
 Cell MagolvesMqtt_CbcMiddlewareService_exportSlot(SedonaVM *vm, Cell *params);
 
+Cell MagolvesMqtt_CbcMiddlewareService_computeSlotKey(SedonaVM *vm,
+                                                      Cell *params);
+
 Cell MagolvesMqtt_CbcMiddlewareService_execute(SedonaVM *vm, Cell *params);
 #endif /* MQTT_CLIENT */
