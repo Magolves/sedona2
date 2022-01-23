@@ -110,6 +110,8 @@ Cell MagolvesMqtt_CbcMiddlewareService_startSession(SedonaVM *vm,
         mqtt_client_set_status(STATUS_DOWN);
       } else {
         mqtt_client_set_status(STATUS_CONNECTED);
+        // Install component change listener
+        sys_component_on_change(changeListener);
       }
     }
   }
@@ -128,6 +130,9 @@ Cell MagolvesMqtt_CbcMiddlewareService_stopSession(SedonaVM *vm, Cell *params) {
   struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
   if (!mosq)
     return falseCell;
+
+  // Remove component change listener
+  sys_component_on_change(NULL);
 
   mqtt_client_set_status(STATUS_DISCONNECTING);
   mosquitto_disconnect_v5(mosq, MQTT_RC_DISCONNECT_WITH_WILL_MSG, NULL);
@@ -199,14 +204,12 @@ Cell MagolvesMqtt_CbcMiddlewareService_exportSlot(SedonaVM *vm, Cell *params) {
            ((uint8_t *)slot) - vm->codeBaseAddr, vm->dataBaseAddr,
            self - vm->dataBaseAddr, self - vm->dataBaseAddr, offset, offset);
 
-  sys_component_on_change(changeListener);
-
   mqtt_add_slot_entry(offset, 0, typeId, paths);
   log_info("Added slot to map %p", slot);
 }
 
 void changeListener(SedonaVM *vm, uint8_t *comp, void *slot) {
-  // log_info("Check slot to map %p", slot);
+  log_info("Check slot to map %p", slot);
   struct mqtt_slot_entry *se = mqtt_find_slot_entry((int)slot);
   if (se != NULL) {
     // log_info("Publish slot %s\n", getSlotName(vm, slot));
