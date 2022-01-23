@@ -28,8 +28,8 @@ class MqttComponent extends Component {
         return
       }
 
-      CbcMiddlewareService.exportSlot(service.getHandle(), this, type.findSlot("cv"), this.path())
-      CbcMiddlewareService.exportSlot(service.getHandle(), this, type.findSlot("sp"), this.path())      
+      CbcMiddlewareService.exportSlot(service.getHandle(), this, type.findSlot("cv"), "/c1/cv")
+      CbcMiddlewareService.exportSlot(service.getHandle(), this, type.findSlot("sp"), "/c1/sp")      
   }
 
   **

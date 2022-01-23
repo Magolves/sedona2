@@ -30,6 +30,7 @@
 extern void sys_component_on_change(void (*set_callback)(SedonaVM *vm,
                                                          uint8_t *comp,
                                                          void *slot));
+extern Cell sys_Component_getFloat(SedonaVM *vm, Cell *params);
 
 static void mqtt_client_set_status(enum MqttConnectionState);
 
@@ -189,7 +190,7 @@ Cell MagolvesMqtt_CbcMiddlewareService_exportSlot(SedonaVM *vm, Cell *params) {
   struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
   uint8_t *self = params[1].aval;
   void *slot = params[2].aval;
-  int16_t *paths = params[3].aval;
+  const char *path = params[3].aval;
   uint16_t typeId = getTypeId(vm, getSlotType(vm, slot));
   uint16_t offset = getSlotHandle(vm, slot);
 
@@ -199,21 +200,32 @@ Cell MagolvesMqtt_CbcMiddlewareService_exportSlot(SedonaVM *vm, Cell *params) {
   const char *typeName = getTypeName(vm, type);
 
   log_info("Register slot %p \n\t((k=0x%x), self=%p, qn=%s, n=%s, t=%d, off=%d "
-           "(0x%x)",
+           "(0x%x), p=%s",
            slot, (MQTT_SLOT_KEY_TYPE)slot, self, typeName,
-           getSlotName(vm, slot), typeId, offset, offset);
+           getSlotName(vm, slot), typeId, offset, offset, path);
 
-  mqtt_add_slot_entry((MQTT_SLOT_KEY_TYPE)slot, 0, typeId, paths);
+  mqtt_add_slot_entry(mosq, (MQTT_SLOT_KEY_TYPE)slot, 0, typeId, path);
   log_info("Added slot to map %p", slot);
 
   return trueCell;
 }
 
-void changeListener(SedonaVM *vm, uint8_t *comp, void *slot) {
-  log_info("Check slot to map s=%p (0x%x)", slot, (MQTT_SLOT_KEY_TYPE)slot);
+void changeListener(SedonaVM *vm, uint8_t *self, void *slot) {
+  // log_info("Check slot to map s=%p (0x%x)", slot, (MQTT_SLOT_KEY_TYPE)slot);
   struct mqtt_slot_entry *se = mqtt_find_slot_entry((MQTT_SLOT_KEY_TYPE)slot);
   if (se != NULL) {
-    log_info("Publish slot %s\n", getSlotName(vm, slot));
+
+    Cell args[2];
+    args[0].aval = self;
+    args[1].aval = slot;
+
+    char buffer[128];
+    sprintf(buffer, "Slot %d [%d], %f", se->slot, se->tid,
+            sys_Component_getFloat(vm, args).fval);
+
+    log_info("Publish slot %s (%s)\n", getSlotName(vm, slot), buffer);
+    mosquitto_publish(se->session, NULL, (const char *)se->path, strlen(buffer),
+                      buffer, 0, false);
   }
 }
 
