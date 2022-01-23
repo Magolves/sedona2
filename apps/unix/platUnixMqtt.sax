@@ -82,9 +82,7 @@
     </comp>
 
     <comp name="mqttC1" id="20" type="MagolvesMqttKit::MqttComponent">      
-    </comp>
-    <comp name="mqttC2" id="21" type="MagolvesMqttKit::MqttComponent">      
-    </comp>
+    </comp>    
   </comp>
 </app>
 <links>
