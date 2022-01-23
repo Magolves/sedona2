@@ -1,7 +1,9 @@
 // Out includs
 #include "mqtt_client.h"
 #include "constants.h"
+#include "log.h"
 #include "mqtt_callbacks.h"
+#include "mqtt_map.h"
 
 // Mosquitto includes
 #include <mosquitto.h>
@@ -21,10 +23,20 @@
 #define snprintf sprintf_s
 #endif
 
+/// @brief External definition of component callbacks
+///
+/// @param set_callback The function pointer to the callback function which is
+/// called when a component slot has changed.
+extern void sys_component_on_change(void (*set_callback)(SedonaVM *vm,
+                                                         uint8_t *comp,
+                                                         void *slot));
+extern Cell sys_Component_getFloat(SedonaVM *vm, Cell *params);
+
 static void mqtt_client_set_status(enum MqttConnectionState);
 
+static void changeListener(SedonaVM *vm, uint8_t *comp, void *slot);
+
 static volatile int status = STATUS_CONNECTING;
-static int connack_result = 0;
 
 ///////////////////////////////////////////////////////
 // Internal functions
@@ -49,7 +61,8 @@ void mqtt_client_set_status(enum MqttConnectionState new_status) {
 /// @param vm the VM instance
 /// @param params the paramater array
 /// @return Cell trueCell, if successful
-Cell cbcmw_CbcMiddlewareService_startSession(SedonaVM *vm, Cell *params) {
+Cell MagolvesMqtt_CbcMiddlewareService_startSession(SedonaVM *vm,
+                                                    Cell *params) {
   char *host = params[0].aval;
   int32_t port = params[1].ival;
   char *clientid = params[2].aval;
@@ -98,6 +111,8 @@ Cell cbcmw_CbcMiddlewareService_startSession(SedonaVM *vm, Cell *params) {
         mqtt_client_set_status(STATUS_DOWN);
       } else {
         mqtt_client_set_status(STATUS_CONNECTED);
+        // Install component change listener
+        sys_component_on_change(changeListener);
       }
     }
   }
@@ -112,10 +127,13 @@ Cell cbcmw_CbcMiddlewareService_startSession(SedonaVM *vm, Cell *params) {
 /// @param vm the VM instance
 /// @param params the paramater array
 /// @return Cell trueCell, if successful
-Cell cbcmw_CbcMiddlewareService_stopSession(SedonaVM *vm, Cell *params) {
+Cell MagolvesMqtt_CbcMiddlewareService_stopSession(SedonaVM *vm, Cell *params) {
   struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
   if (!mosq)
     return falseCell;
+
+  // Remove component change listener
+  sys_component_on_change(NULL);
 
   mqtt_client_set_status(STATUS_DISCONNECTING);
   mosquitto_disconnect_v5(mosq, MQTT_RC_DISCONNECT_WITH_WILL_MSG, NULL);
@@ -129,7 +147,8 @@ Cell cbcmw_CbcMiddlewareService_stopSession(SedonaVM *vm, Cell *params) {
 /// @param vm the VM instance
 /// @param params the paramater array
 /// @return Cell trueCell, if session is alive/connected
-Cell cbcmw_CbcMiddlewareService_isSessionLive(SedonaVM *vm, Cell *params) {
+Cell MagolvesMqtt_CbcMiddlewareService_isSessionLive(SedonaVM *vm,
+                                                     Cell *params) {
   struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
   if (!mosq)
     return falseCell;
@@ -142,7 +161,7 @@ Cell cbcmw_CbcMiddlewareService_isSessionLive(SedonaVM *vm, Cell *params) {
 /// @param vm the VM instance
 /// @param params the paramater array
 /// @return Cell the connection status in ival
-Cell cbcmw_CbcMiddlewareService_getStatus(SedonaVM *vm, Cell *params) {
+Cell MagolvesMqtt_CbcMiddlewareService_getStatus(SedonaVM *vm, Cell *params) {
   Cell result = {status};
   return result;
 }
@@ -153,7 +172,7 @@ Cell cbcmw_CbcMiddlewareService_getStatus(SedonaVM *vm, Cell *params) {
 /// @param vm the VM instance
 /// @param params the paramater array
 /// @return Cell the result
-Cell cbcmw_CbcMiddlewareService_execute(SedonaVM *vm, Cell *params) {
+Cell MagolvesMqtt_CbcMiddlewareService_execute(SedonaVM *vm, Cell *params) {
   struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
 
   // Parameters
@@ -165,4 +184,59 @@ Cell cbcmw_CbcMiddlewareService_execute(SedonaVM *vm, Cell *params) {
   // 1 for future compatibility.
   mosquitto_loop(mosq, -1, 1);
   return trueCell;
+}
+
+Cell MagolvesMqtt_CbcMiddlewareService_exportSlot(SedonaVM *vm, Cell *params) {
+  struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
+  uint8_t *self = params[1].aval;
+  void *slot = params[2].aval;
+  const char *path = params[3].aval;
+  uint16_t typeId = getTypeId(vm, getSlotType(vm, slot));
+  uint16_t offset = getSlotHandle(vm, slot);
+
+  Cell key = MagolvesMqtt_CbcMiddlewareService_computeSlotKey(vm, params);
+
+  void *type = getCompType(vm, self);
+  const char *typeName = getTypeName(vm, type);
+
+  log_info("Register slot %p \n\t((k=0x%x), self=%p, qn=%s, n=%s, t=%d, off=%d "
+           "(0x%x), p=%s",
+           slot, (MQTT_SLOT_KEY_TYPE)slot, self, typeName,
+           getSlotName(vm, slot), typeId, offset, offset, path);
+
+  mqtt_add_slot_entry(mosq, (MQTT_SLOT_KEY_TYPE)slot, 0, typeId, path);
+  log_info("Added slot to map %p", slot);
+
+  return trueCell;
+}
+
+void changeListener(SedonaVM *vm, uint8_t *self, void *slot) {
+  // log_info("Check slot to map s=%p (0x%x)", slot, (MQTT_SLOT_KEY_TYPE)slot);
+  struct mqtt_slot_entry *se = mqtt_find_slot_entry((MQTT_SLOT_KEY_TYPE)slot);
+  if (se != NULL) {
+
+    Cell args[2];
+    args[0].aval = self;
+    args[1].aval = slot;
+
+    char buffer[128];
+    sprintf(buffer, "Slot %d [%d], %f", se->slot, se->tid,
+            sys_Component_getFloat(vm, args).fval);
+
+    log_info("Publish slot %s (%s)\n", getSlotName(vm, slot), buffer);
+    mosquitto_publish(se->session, NULL, (const char *)se->path, strlen(buffer),
+                      buffer, 0, false);
+  }
+}
+
+Cell MagolvesMqtt_CbcMiddlewareService_computeSlotKey(SedonaVM *vm,
+                                                      Cell *params) {
+
+  uint8_t *self = params[1].aval;
+  void *slot = params[2].aval;
+  uint16_t offset = getSlotHandle(vm, slot);
+
+  Cell result;
+  result.ival = (self - vm->dataBaseAddr) + offset;
+  return result;
 }

@@ -21,7 +21,13 @@ class CbcMiddlewareService extends Service
   **
   virtual override void start()
   {
-    log.message("Middleware service started")
+    log.message("Middleware service starting...")
+    handle = startSession(host.toStr(), port, clientid.toStr(), username.toStr(), password.toStr())
+    if (handle != null) {
+      log.message("Middleware service started")
+    } else {
+      log.error("Middleware service error")
+    }    
   }
 
   ** 
@@ -29,12 +35,26 @@ class CbcMiddlewareService extends Service
   ** 
   virtual override void stop()
   {
-    log.message("middleware service stopped")
+    if (handle != null) {
+      stopSession(handle);
+      log.message("Middleware service stopped")
+    } else {
+      log.warning("Middleware service not started")
+    }
   }
 
   ////////////////////////////////////////////////////////////////
   // Methods
   ////////////////////////////////////////////////////////////////
+  public Obj getHandle()
+  {
+    if (isSessionLive(handle))
+      return handle
+    else
+      return null
+  }
+
+
   // natives 
   **
   ** Start a middleware session to given host:port using clientid, username and password.
@@ -58,8 +78,12 @@ class CbcMiddlewareService extends Service
   ** 
   static native int getStatus()
 
+  static native bool exportSlot(Obj handle, Component c, Slot slot, Str path);
+
   ////////////////////////////////////////////////////////////////
   // Fields
   ////////////////////////////////////////////////////////////////
   define Log log
+
+  private Obj handle = null
 }

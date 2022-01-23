@@ -1,0 +1,77 @@
+class MqttComponent extends Component {
+      ** deadband centered around sp
+  @config @summary property float diff = 0.0f
+
+  ** set true to put into heating mode, false for cooling mode
+  @config @summary property bool  isHeating = false
+
+  ** the setpoint
+  @config @summary property float sp
+
+  ** actual
+  property float cv
+
+  ** calls for cooling or heating as required by sp/cv/isheating
+  @readonly property bool out
+
+  ** need to raise
+  @readonly property bool raise
+
+  ** need to lower
+  @readonly property bool lower
+
+  virtual override void start()
+  {
+      CbcMiddlewareService service = (CbcMiddlewareService)Sys.app.lookupService(CbcMiddlewareService.type)
+      if (service == null) {
+        App.log.error("CbcMiddlewareService is missing")
+        return
+      }
+
+      CbcMiddlewareService.exportSlot(service.getHandle(), this, type.findSlot("cv"), "/c1/cv")
+      CbcMiddlewareService.exportSlot(service.getHandle(), this, type.findSlot("sp"), "/c1/sp")      
+  }
+
+  **
+  ** Execute is called once every scan.
+  **
+  virtual override void execute()
+  {
+    float delta   = diff/2.0f
+    float hiValue = sp + delta
+    float loValue = sp - delta
+    
+    if (cv > hiValue) 
+    {
+      lower := true
+      raise := false
+    }
+    else if ( cv < loValue )
+    {
+      lower := false
+      raise := true
+    }
+    else if ( lower && cv < sp )
+    {
+      lower := false
+    }
+    else if ( raise && cv > sp )
+    {
+      raise := false
+    }
+
+    if (isHeating)
+      out := raise
+    else 
+      out := lower
+
+    if (Sys.ticks() % 10L == 0L)
+    {
+      cv := cv + 0.1
+      //Sys.out.print("cv changed to $cv").nl()
+    }
+  }
+
+  define int[] path1 = {0, 1, 2, 3, 4}
+  define int[] path2 = {1, 2, 3, 4, 5}
+}

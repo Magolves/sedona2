@@ -13,6 +13,8 @@
     <nativeKit depend="inet 1.0+"   />
     <nativeKit depend="datetimeStd 1.0+" />
     <nativeKit depend="platUnix 1.0+" />
+    <nativeKit depend="MagolvesMqtt 1.0+" />
+    
  
     <!-- Sources -->
     <nativeSource path="/src/vm" />

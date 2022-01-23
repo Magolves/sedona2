@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS On)
 
-set(MQTT_SOURCES mqtt_client.c mqtt_callbacks.c constants.c)
+set(MQTT_SOURCES mqtt_client.c mqtt_callbacks.c mqtt_map.c log.c constants.c)
 set(MQTT_STUB_SOURCES local/main.c sedona/vmstub.c)
 set(VM_SOURCES 
     constants.c
@@ -50,7 +50,7 @@ target_include_directories(${TARGET_NAME} PRIVATE sedona .)
 if(WINDOWS)
     target_compile_definitions(${TARGET_NAME} PRIVATE -D__WINDOWS__)
 else()
-    target_compile_definitions(${TARGET_NAME} PRIVATE -D__UNIX__)
+    target_compile_definitions(${TARGET_NAME} PRIVATE -D__UNIX__ -DLOG_USE_COLOR)
 endif()
 
 if (NOT LOCAL_TEST)
