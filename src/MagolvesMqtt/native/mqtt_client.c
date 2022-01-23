@@ -1,7 +1,9 @@
 // Out includs
 #include "mqtt_client.h"
 #include "constants.h"
+#include "log.h"
 #include "mqtt_callbacks.h"
+#include "mqtt_map.h"
 
 // Mosquitto includes
 #include <mosquitto.h>
@@ -21,10 +23,19 @@
 #define snprintf sprintf_s
 #endif
 
+/// @brief External definition of component callbacks
+///
+/// @param set_callback The function pointer to the callback function which is
+/// called when a component slot has changed.
+extern void sys_component_on_change(void (*set_callback)(SedonaVM *vm,
+                                                         uint8_t *comp,
+                                                         void *slot));
+
 static void mqtt_client_set_status(enum MqttConnectionState);
 
+static void changeListener(SedonaVM *vm, uint8_t *comp, void *slot);
+
 static volatile int status = STATUS_CONNECTING;
-static int connack_result = 0;
 
 ///////////////////////////////////////////////////////
 // Internal functions
@@ -165,4 +176,37 @@ Cell cbcmw_CbcMiddlewareService_execute(SedonaVM *vm, Cell *params) {
   // 1 for future compatibility.
   mosquitto_loop(mosq, -1, 1);
   return trueCell;
+}
+
+Cell cbcmw_CbcMiddlewareService_exportSlot(SedonaVM *vm, Cell *params) {
+  struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
+  uint8_t *self = params[1].aval;
+  void *slot = params[2].aval;
+  int16_t *paths = params[3].aval;
+  uint16_t typeId = getTypeId(vm, getSlotType(vm, slot));
+  uint16_t offset = getSlotHandle(vm, slot);
+
+  void *type = getCompType(vm, self);
+  const char *typeName = getTypeName(vm, type);
+
+  log_info("Register slot %p (self=%p, qn=%s, n=%s, t=%d, cb=%p (off=0x%x, "
+           "%ld), db=%p, "
+           "(self-db)=0x%x (%d), offset=0x%x (%d))",
+           slot, self, typeName, getSlotName(vm, slot), typeId,
+           vm->codeBaseAddr, ((uint8_t *)slot) - vm->codeBaseAddr,
+           ((uint8_t *)slot) - vm->codeBaseAddr, vm->dataBaseAddr,
+           self - vm->dataBaseAddr, self - vm->dataBaseAddr, offset, offset);
+
+  sys_component_on_change(changeListener);
+
+  mqtt_add_slot_entry(offset, 0, typeId, paths);
+  log_info("Added slot to map %p", slot);
+}
+
+void changeListener(SedonaVM *vm, uint8_t *comp, void *slot) {
+  // log_info("Check slot to map %p", slot);
+  struct mqtt_slot_entry *se = mqtt_find_slot_entry((int)slot);
+  if (se != NULL) {
+    // log_info("Publish slot %s\n", getSlotName(vm, slot));
+  }
 }

@@ -9,10 +9,22 @@
 #include "sedona.h"
 #include "float.h"
 
+#include "sys_Component.h"
+
+//////////////////////////////////////////////////////////////////////////
+// On change handler
+//////////////////////////////////////////////////////////////////////////
+static set_callback callback = NULL;
+static void notifyChangeListener(SedonaVM* vm, uint8_t *comp, void *slot);
+
+void sys_component_on_change(set_callback cb)
+{
+  callback = cb;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Error Handling
 //////////////////////////////////////////////////////////////////////////
-
 static Cell accessError(SedonaVM* vm, const char* method, void* comp, void* slot)
 {
 #ifdef SCODE_DEBUG
@@ -165,6 +177,8 @@ Cell sys_Component_doSetBool(SedonaVM* vm, Cell* params)
   
   // update memory location  
   setByte(self, offset, val);
+
+  notifyChangeListener(vm, self, slot);
   return trueCell;
 }
 
@@ -182,14 +196,17 @@ Cell sys_Component_doSetInt(SedonaVM* vm, Cell* params)
     case ByteTypeId:          
       if (getByte(self, offset) == val) return falseCell;
       setByte(self, offset, val);
+      notifyChangeListener(vm, self, slot);
       break;
     case ShortTypeId:
       if (getShort(self, offset) == val) return falseCell;
       setShort(self, offset, val);
+      notifyChangeListener(vm, self, slot);
       break;
     case IntTypeId:
       if (getInt(self, offset) == val) return falseCell;
       setInt(self, offset, val);
+      notifyChangeListener(vm, self, slot);
       break;
     default:
       return accessError(vm, "setInt", self, slot);
@@ -217,6 +234,8 @@ Cell sys_Component_doSetLong(SedonaVM* vm, Cell* params)
 
   // update memory location
   setWide(self, offset, val);
+
+  notifyChangeListener(vm, self, slot);
   return trueCell;
 }
 
@@ -245,6 +264,8 @@ Cell sys_Component_doSetFloat(SedonaVM* vm, Cell* params)
 
   // update memory location
   setFloat(self, offset, newval.fval);
+
+  notifyChangeListener(vm, self, slot);
   return trueCell;
 }
 
@@ -267,6 +288,8 @@ Cell sys_Component_doSetDouble(SedonaVM* vm, Cell* params)
 
   // update memory location
   setWide(self, offset, val);
+
+  notifyChangeListener(vm, self, slot);
   return trueCell;
 }
 
@@ -428,7 +451,16 @@ Cell sys_Component_invokeBuf(SedonaVM* vm, Cell* params)
   args[1].aval = val;
   vm->call(vm, getActionMethod(vm->codeBaseAddr, self, vidx), args, 2);
 
+  notifyChangeListener(vm, self, slot);
+
   return nullCell;
 }
 
+
+static void notifyChangeListener(SedonaVM* vm, uint8_t *comp, void *slot)
+{
+  if (callback != NULL) {
+    callback(vm, comp, slot);
+  }
+}
 
