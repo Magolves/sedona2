@@ -4,6 +4,7 @@ endif()
 
 if (UNIX)
     add_sedona_app(unix/platUnix)
+    add_sedona_app(unix/platUnixMqtt)
 endif()
 
 if (WIN32)

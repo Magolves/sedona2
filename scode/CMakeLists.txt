@@ -4,6 +4,7 @@ endif()
 
 if (UNIX)
     add_sedona_scode(platUnix)
+    add_sedona_scode(platUnixMqtt)
 endif()
 
 if (WIN32)

@@ -12,6 +12,7 @@
   <kit name='datetimeStd'/>
   <kit name='basicSchedule' />
   <kit name='MagolvesMqtt'/>
+  <kit name='MagolvesMqttKit'/>
   <kit name='platUnix' />
 
   <!-- These replace control kit as of 1.2 -->
@@ -80,9 +81,9 @@
       <prop name="meta" val="386662401"/>
     </comp>
 
-    <comp name="mqttC1" id="20" type="MagolvesMqttKit:MqttComponent">      
+    <comp name="mqttC1" id="20" type="MagolvesMqttKit::MqttComponent">      
     </comp>
-    <comp name="mqttC2" id="21" type="MagolvesMqttKit:MqttComponent">      
+    <comp name="mqttC2" id="21" type="MagolvesMqttKit::MqttComponent">      
     </comp>
   </comp>
 </app>
