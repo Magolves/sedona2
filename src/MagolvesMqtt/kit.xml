@@ -13,8 +13,6 @@
 >
   <!-- Dependencies -->
   <depend on="sys 1.2+" />
-  <depend on="datetime 1.0+" />
-  <depend on="datetimeStd 1.0+" />
 
   <!-- Source Directories -->
   <source dir="." />
@@ -24,7 +22,8 @@
   <native qname="MagolvesMqtt::CbcMiddlewareService.stopSession"     id="51::1"  />
   <native qname="MagolvesMqtt::CbcMiddlewareService.isSessionLive"   id="51::2"  />
   <native qname="MagolvesMqtt::CbcMiddlewareService.getStatus"   id="51::3"  />
-  
+  <native qname="MagolvesMqtt::CbcMiddlewareService.exportSlot"   id="51::10"  />
+   
   
 
 </sedonaKit>
