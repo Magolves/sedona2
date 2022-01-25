@@ -11,6 +11,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,8 +36,14 @@ extern Cell sys_Component_getFloat(SedonaVM *vm, Cell *params);
 static void mqtt_client_set_status(enum MqttConnectionState);
 
 static void changeListener(SedonaVM *vm, uint8_t *comp, void *slot);
+static void renderPayload(char *buffer, size_t *len, uint8_t *self,
+                          uint16_t offset, uint16_t tid);
 
 static volatile int status = STATUS_CONNECTING;
+/// @brief Comman path for assembling the topic during register
+
+#define MAX_PATH_LENGTH 512
+static char MQTT_PATH_BUFFER[MAX_PATH_LENGTH];
 
 ///////////////////////////////////////////////////////
 // Internal functions
@@ -194,18 +201,27 @@ Cell MagolvesMqtt_CbcMiddlewareService_exportSlot(SedonaVM *vm, Cell *params) {
   uint16_t typeId = getTypeId(vm, getSlotType(vm, slot));
   uint16_t offset = getSlotHandle(vm, slot);
 
-  Cell key = MagolvesMqtt_CbcMiddlewareService_computeSlotKey(vm, params);
-
   void *type = getCompType(vm, self);
   const char *typeName = getTypeName(vm, type);
 
-  log_info("Register slot %p \n\t((k=0x%x), self=%p, qn=%s, n=%s, t=%d, off=%d "
-           "(0x%x), p=%s",
-           slot, (MQTT_SLOT_KEY_TYPE)slot, self, typeName,
-           getSlotName(vm, slot), typeId, offset, offset, path);
+  MQTT_PATH_BUFFER[0] = 0;
+  strncpy(MQTT_PATH_BUFFER, path, MAX_PATH_LENGTH);
+  strncat(MQTT_PATH_BUFFER, "/", MAX_PATH_LENGTH);
+  strncat(MQTT_PATH_BUFFER, getSlotName(vm, slot), MAX_PATH_LENGTH);
 
-  mqtt_add_slot_entry(mosq, (MQTT_SLOT_KEY_TYPE)slot, 0, typeId, path);
+  log_info("Register slot %p \n\t((k=0x%x), self=%p, qn=%s, n=%s, t=%d, off=%d "
+           "(0x%x), p=%s -> %s",
+           slot, (MQTT_SLOT_KEY_TYPE)slot, self, typeName,
+           getSlotName(vm, slot), typeId, offset, offset, path,
+           MQTT_PATH_BUFFER);
+
+  mqtt_add_slot_entry(mosq, (MQTT_SLOT_KEY_TYPE)slot, typeId, offset,
+                      MQTT_PATH_BUFFER);
+
   log_info("Added slot to map %p", slot);
+
+  mosquitto_publish(mosq, NULL, (const char *)"debug/reg",
+                    strlen(MQTT_PATH_BUFFER), MQTT_PATH_BUFFER, 0, false);
 
   return trueCell;
 }
@@ -220,23 +236,47 @@ void changeListener(SedonaVM *vm, uint8_t *self, void *slot) {
     args[1].aval = slot;
 
     char buffer[128];
+    size_t len = 0;
     sprintf(buffer, "Slot %d [%d], %f", se->slot, se->tid,
             sys_Component_getFloat(vm, args).fval);
 
-    log_info("Publish slot %s (%s)\n", getSlotName(vm, slot), buffer);
-    mosquitto_publish(se->session, NULL, (const char *)se->path, strlen(buffer),
-                      buffer, 0, false);
+    renderPayload(buffer, &len, self, se->slot, se->tid);
+    log_info("Publish slot %s (%s, %d bytes, t=%d)\n", getSlotName(vm, slot),
+             buffer, len, se->tid);
+    mosquitto_publish(se->session, NULL, (const char *)se->path, len, buffer, 0,
+                      false);
   }
 }
 
-Cell MagolvesMqtt_CbcMiddlewareService_computeSlotKey(SedonaVM *vm,
-                                                      Cell *params) {
+void renderPayload(char *buffer, size_t *len, uint8_t *self, uint16_t offset,
+                   uint16_t tid) {
 
-  uint8_t *self = params[1].aval;
-  void *slot = params[2].aval;
-  uint16_t offset = getSlotHandle(vm, slot);
-
-  Cell result;
-  result.ival = (self - vm->dataBaseAddr) + offset;
-  return result;
+  switch (tid) {
+  case BoolTypeId:
+  case ByteTypeId:
+    *len = sizeof(uint8_t);
+    uint8_t b = getByte(self, offset);
+    memcpy(buffer, &b, *len);
+    break;
+  case ShortTypeId:
+    *len = sizeof(uint16_t);
+    uint16_t s = getShort(self, offset);
+    memcpy(buffer, &s, *len);
+    break;
+  case IntTypeId:
+  case FloatTypeId:
+    *len = sizeof(int32_t);
+    int32_t f = getInt(self, offset);
+    memcpy(buffer, &f, *len);
+    break;
+  case DoubleTypeId:
+    *len = sizeof(int64_t);
+    int64_t l = getWide(self, offset);
+    memcpy(buffer, &l, *len);
+    break;
+  default:
+    log_warn("Invalid tid %d", tid);
+    *len = 0;
+    break;
+  }
 }

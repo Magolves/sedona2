@@ -1,24 +1,22 @@
 class MqttComponent extends Component {
-      ** deadband centered around sp
-  @config @summary property float diff = 0.0f
+  define int TOPIC_STR_LEN = 256;
 
-  ** set true to put into heating mode, false for cooling mode
-  @config @summary property bool  isHeating = false
+  @config @asStr property Buf(TOPIC_STR_LEN) mqttTopic = "root"
+
+      ** deadband centered around setPoint
+  @config @summary property float hyst = 6.0f
+
+  ** set true to put into heating mode
+  @config @summary property bool  enabled = true
 
   ** the setpoint
-  @config @summary property float sp
+  @config @summary property float setPoint = 50.0
 
-  ** actual
-  property float cv
+  ** actualTemp
+  property float actualTemp = 20.0
 
-  ** calls for cooling or heating as required by sp/cv/isheating
-  @readonly property bool out
-
-  ** need to raise
-  @readonly property bool raise
-
-  ** need to lower
-  @readonly property bool lower
+  ** calls for cooling or heating as required by setPoint/actualTemp/isheating
+  @readonly property bool isHeating
 
   virtual override void start()
   {
@@ -28,8 +26,10 @@ class MqttComponent extends Component {
         return
       }
 
-      CbcMiddlewareService.exportSlot(service.getHandle(), this, type.findSlot("cv"), "/c1/cv")
-      CbcMiddlewareService.exportSlot(service.getHandle(), this, type.findSlot("sp"), "/c1/sp")      
+      CbcMiddlewareService.exportSlot(service.getHandle(), this, type.findSlot("actualTemp"), mqttTopic.toStr())
+      CbcMiddlewareService.exportSlot(service.getHandle(), this, type.findSlot("setPoint"), mqttTopic.toStr())
+      CbcMiddlewareService.exportSlot(service.getHandle(), this, type.findSlot("hyst"), mqttTopic.toStr())      
+      CbcMiddlewareService.exportSlot(service.getHandle(), this, type.findSlot("isHeating"), mqttTopic.toStr())      
   }
 
   **
@@ -37,41 +37,22 @@ class MqttComponent extends Component {
   **
   virtual override void execute()
   {
-    float delta   = diff/2.0f
-    float hiValue = sp + delta
-    float loValue = sp - delta
+    float lowTemp = setPoint - hyst
     
-    if (cv > hiValue) 
-    {
-      lower := true
-      raise := false
-    }
-    else if ( cv < loValue )
-    {
-      lower := false
-      raise := true
-    }
-    else if ( lower && cv < sp )
-    {
-      lower := false
-    }
-    else if ( raise && cv > sp )
-    {
-      raise := false
-    }
-
     if (isHeating)
-      out := raise
-    else 
-      out := lower
+      isHeating := enabled && actualTemp <= setPoint
+    else
+      isHeating := enabled && actualTemp <= lowTemp 
 
-    if (Sys.ticks() % 10L == 0L)
+    if (Sys.ticks() % 10000L == 0L)
     {
-      cv := cv + 0.1
-      //Sys.out.print("cv changed to $cv").nl()
+      if (isHeating)
+        actualTemp := actualTemp + 0.1
+      else if (actualTemp > 10.0)
+        actualTemp := actualTemp - 0.02
+      //Sys.out.print("actualTemp changed to $actualTemp").nl()
+
+
     }
   }
-
-  define int[] path1 = {0, 1, 2, 3, 4}
-  define int[] path2 = {1, 2, 3, 4, 5}
 }

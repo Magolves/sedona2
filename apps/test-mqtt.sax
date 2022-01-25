@@ -9,8 +9,8 @@
   <kit name='datetime'/>
   <kit name='datetimeStd'/>
   <kit name='basicSchedule' />
-  <kit name='communityMQTT' />
-  <kit name='mqtteval' />
+  <kit name='MagolvesMqtt' />
+  <kit name='MagolvesMqttKit' />
 
   <!-- These replace control kit as of 1.2 -->
   <kit name='func' />
@@ -46,20 +46,22 @@
     <comp name="time" type="datetimeStd::DateTimeServiceStd">
       <prop name="osUtcOffset" val="true"/>
     </comp>
-    <comp name="mqtt" type="communityMQTT::MQTTService">
-      <comp name="pub" type="communityMQTT::Publisher">
+    <comp name="mqtt" type="MagolvesMqtt::CbcMiddlewareService">
 	    <prop name="host" val="localhost"/>
-	    <prop name="clientid" val="eval"/>
-      </comp>      
     </comp>
   </comp>
   <!-- /play -->
   <comp name="mqtt" id="10" type="sys::Folder">
     <!-- /play/rampA -->
-    <comp name="rampA" type="mqtteval::MqttComponent">
-      <prop name="meta" val="67371009"/>
-      <prop name="cv" val="20.00000"/>
-      <prop name="sp" val="25.00000"/>
+    <comp name="hc1" type="MagolvesMqttKit::MqttComponent">
+      <prop name="actual" val="20.00000"/>
+      <prop name="setPoint" val="25.00000"/>
+      <prop name="mqttTopic" val="hc1"/>      
+    </comp>    
+    <comp name="hc2" type="MagolvesMqttKit::MqttComponent">
+      <prop name="actual" val="30.00000"/>
+      <prop name="setPoint" val="45.00000"/>
+      <prop name="mqttTopic" val="hc2"/>      
     </comp>    
   </comp>
 </app>

@@ -22,12 +22,13 @@ struct mqtt_slot_entry {
 
 /// @brief Add a slot (entry) to the internal hash map.
 ///
-/// @param tid the type id
-/// @param sid the slot number within the Sedona component
-/// @param path
-void mqtt_add_slot_entry(const struct mosquitto *session,
-                         MQTT_SLOT_KEY_TYPE offset, uint8_t tid, uint8_t sid,
-                         const char *path);
+/// @param session the MQTT session pointer
+/// @param offset the slot handle/pointer
+/// @param tid the slot type id
+/// @param sid the slot id
+/// @param path the MQTT topic
+void mqtt_add_slot_entry(struct mosquitto *session, MQTT_SLOT_KEY_TYPE offset,
+                         uint8_t tid, uint8_t sid, const char *path);
 
 struct mqtt_slot_entry *mqtt_find_slot_entry(MQTT_SLOT_KEY_TYPE offset);
 

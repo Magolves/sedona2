@@ -31,7 +31,7 @@
   <depend on="math 1.2"    />
   <depend on="timing 1.2"  />
   <depend on="types 1.2"   />
-  <depend on="communityMQTT 1.2" /> 
-  <depend on="mqtteval 1.2" />   
+  <depend on="MagolvesMqtt 1.2" /> 
+  <depend on="MagolvesMqttKit 1.2" /> 
 </sedonaCode>
 

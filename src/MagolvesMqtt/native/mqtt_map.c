@@ -5,9 +5,8 @@
 
 static struct mqtt_slot_entry *entries = NULL;
 
-void mqtt_add_slot_entry(const struct mosquitto *session,
-                         MQTT_SLOT_KEY_TYPE offset, uint8_t tid, uint8_t sid,
-                         const char *path) {
+void mqtt_add_slot_entry(struct mosquitto *session, MQTT_SLOT_KEY_TYPE offset,
+                         uint8_t tid, uint8_t sid, const char *path) {
   struct mqtt_slot_entry *s;
 
   HASH_FIND_INT(entries, &offset, s); /* slot already in the hash? */
