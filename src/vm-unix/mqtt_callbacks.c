@@ -1,6 +1,7 @@
 #include "mqtt_callbacks.h"
 #include "log.h"
 #include "mqtt_map.h"
+#include "sedona.h"
 
 #include <mqtt_protocol.h>
 
@@ -72,10 +73,21 @@ void mqtt_message_v5(struct mosquitto *mosq, void *obj,
   UNUSED(mosq);
   UNUSED(obj);
 
+  if (msg->payloadlen == 0) {
+    return;
+  }
+
   const struct mqtt_slot_entry *se = mqtt_find_path_entry(msg->topic);
 
   if (se != NULL) {
     log_info("Found: %s (%d)", se->path, se->tid);
+
+    if (se->tid == BoolTypeId) {
+      setByte(se->self, se->slot,
+              ((char *)msg->payload)[0] == '1' ||
+                  ((char *)msg->payload)[0] == 't');
+    }
+
   } else {
     log_info("Ignored: %s", msg->topic);
   }

@@ -244,7 +244,7 @@ Cell MagolvesMqtt_CbcMiddlewareService_export(SedonaVM *vm, Cell *params,
            slot, (MQTT_SLOT_KEY_TYPE)key, self, typeName, getSlotName(vm, slot),
            typeId, offset, offset, path, MQTT_PATH_BUFFER);
 
-  mqtt_add_slot_entry(mosq, (MQTT_SLOT_KEY_TYPE)key, typeId, offset,
+  mqtt_add_slot_entry(mosq, (MQTT_SLOT_KEY_TYPE)key, self, offset, typeId,
                       MQTT_PATH_BUFFER);
 
   log_info("Added slot to map %p", slot);
