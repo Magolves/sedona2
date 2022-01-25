@@ -26,10 +26,10 @@ class MqttComponent extends Component {
         return
       }
 
-      CbcMiddlewareService.exportSlot(service.getHandle(), this, type.findSlot("actualTemp"), mqttTopic.toStr())
-      CbcMiddlewareService.exportSlot(service.getHandle(), this, type.findSlot("setPoint"), mqttTopic.toStr())
-      CbcMiddlewareService.exportSlot(service.getHandle(), this, type.findSlot("hyst"), mqttTopic.toStr())      
-      CbcMiddlewareService.exportSlot(service.getHandle(), this, type.findSlot("isHeating"), mqttTopic.toStr())      
+      CbcMiddlewareService.exportMonitor(service.getHandle(), this, type.findSlot("actualTemp"), mqttTopic.toStr())
+      CbcMiddlewareService.exportMonitor(service.getHandle(), this, type.findSlot("setPoint"), mqttTopic.toStr())
+      CbcMiddlewareService.exportParameter(service.getHandle(), this, type.findSlot("enabled"), mqttTopic.toStr())      
+      CbcMiddlewareService.exportMonitor(service.getHandle(), this, type.findSlot("isHeating"), mqttTopic.toStr())      
   }
 
   **

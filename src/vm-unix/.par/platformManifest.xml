@@ -102,7 +102,9 @@
   <nativeMethod qname="MagolvesMqtt::CbcMiddlewareService.stopSession" id="51::1" />
   <nativeMethod qname="MagolvesMqtt::CbcMiddlewareService.isSessionLive" id="51::2" />
   <nativeMethod qname="MagolvesMqtt::CbcMiddlewareService.getStatus" id="51::3" />
-  <nativeMethod qname="MagolvesMqtt::CbcMiddlewareService.exportSlot" id="51::10" />
+  <nativeMethod qname="MagolvesMqtt::CbcMiddlewareService.exportMonitor" id="51::10" />
+  <nativeMethod qname="MagolvesMqtt::CbcMiddlewareService.exportParameter" id="51::11" />
+  <nativeMethod qname="MagolvesMqtt::CbcMiddlewareService.exportAction" id="51::12" />
 </natives>
 
 <manifestIncludes>

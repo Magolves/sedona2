@@ -11,8 +11,10 @@ void mqtt_log_callback(struct mosquitto *mosq, void *obj, int level,
                        const char *str) {
   UNUSED(mosq);
   UNUSED(obj);
+  UNUSED(level);
+  UNUSED(str);
 
-  log_info("MQTT[%d] %s\n", level, str);
+  // log_info("MQTT[%d] %s\n", level, str);
 }
 
 void mqtt_connect_callback_v5(struct mosquitto *mosq, void *obj, int result,

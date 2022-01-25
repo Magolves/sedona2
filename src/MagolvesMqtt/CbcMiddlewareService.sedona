@@ -78,7 +78,11 @@ class CbcMiddlewareService extends Service
   ** 
   static native int getStatus()
 
-  static native bool exportSlot(Obj handle, Component c, Slot slot, Str path);
+  static native bool exportMonitor(Obj handle, Component c, Slot slot, Str path);
+
+  static native bool exportParameter(Obj handle, Component c, Slot slot, Str path);
+
+  static native bool exportAction(Obj handle, Component c, Slot slot, Str path);
 
   ////////////////////////////////////////////////////////////////
   // Fields

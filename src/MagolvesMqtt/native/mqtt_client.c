@@ -203,7 +203,23 @@ Cell MagolvesMqtt_CbcMiddlewareService_execute(SedonaVM *vm, Cell *params) {
   return trueCell;
 }
 
-Cell MagolvesMqtt_CbcMiddlewareService_exportSlot(SedonaVM *vm, Cell *params) {
+Cell MagolvesMqtt_CbcMiddlewareService_exportMonitor(SedonaVM *vm,
+                                                     Cell *params) {
+  MagolvesMqtt_CbcMiddlewareService_export(vm, params, EXPORT_MONITOR);
+}
+
+Cell MagolvesMqtt_CbcMiddlewareService_exportParameter(SedonaVM *vm,
+                                                       Cell *params) {
+  MagolvesMqtt_CbcMiddlewareService_export(vm, params, EXPORT_PARAMETER);
+}
+
+Cell MagolvesMqtt_CbcMiddlewareService_exportAction(SedonaVM *vm,
+                                                    Cell *params) {
+  MagolvesMqtt_CbcMiddlewareService_export(vm, params, EXPORT_ACTION);
+}
+
+Cell MagolvesMqtt_CbcMiddlewareService_export(SedonaVM *vm, Cell *params,
+                                              int flags) {
   struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
   uint8_t *self = params[1].aval;
   void *slot = params[2].aval;
@@ -233,14 +249,14 @@ Cell MagolvesMqtt_CbcMiddlewareService_exportSlot(SedonaVM *vm, Cell *params) {
 
   log_info("Added slot to map %p", slot);
 
-  mosquitto_publish(mosq, NULL, (const char *)"debug/reg",
-                    strlen(MQTT_PATH_BUFFER), MQTT_PATH_BUFFER, 0, false);
+  if ((flags & EXPORT_WRITABLE) > 0) {
+    renderPayloadAsJson(JSON_BUFFER, self, offset, typeId);
+    mosquitto_publish(mosq, NULL, MQTT_PATH_BUFFER, strlen(JSON_BUFFER),
+                      JSON_BUFFER, 0, false);
 
-  MQTT_PATH_BUFFER[0] = 0;
-  strncpy(MQTT_PATH_BUFFER, path, MAX_PATH_LENGTH);
-  strncat(MQTT_PATH_BUFFER, "/+", MAX_PATH_LENGTH);
-  mosquitto_subscribe_v5(mosq, NULL, MQTT_PATH_BUFFER, 0 /*qos*/,
-                         0 /* options*/, NULL);
+    mosquitto_subscribe_v5(mosq, NULL, MQTT_PATH_BUFFER, 0 /*qos*/,
+                           0 /* options*/, NULL);
+  }
   return trueCell;
 }
 
@@ -250,7 +266,8 @@ void changeListener(SedonaVM *vm, uint8_t *self, void *slot) {
   MQTT_SLOT_KEY_TYPE key =
       MagolvesMqtt_CbcMiddlewareService_computeSlotKey(vm, self, slot);
 
-  struct mqtt_slot_entry *se = mqtt_find_slot_entry((MQTT_SLOT_KEY_TYPE)key);
+  const struct mqtt_slot_entry *se =
+      mqtt_find_slot_entry((MQTT_SLOT_KEY_TYPE)key);
   if (se != NULL) {
 
     Cell args[2];
@@ -258,8 +275,9 @@ void changeListener(SedonaVM *vm, uint8_t *self, void *slot) {
     args[1].aval = slot;
 
     renderPayloadAsJson(JSON_BUFFER, self, se->slot, se->tid);
+    /*
     log_info("Publish slot %s (%s, t=%d)\n", getSlotName(vm, slot), JSON_BUFFER,
-             se->tid);
+             se->tid);*/
     mosquitto_publish(se->session, NULL, (const char *)se->path,
                       strlen(JSON_BUFFER), JSON_BUFFER, 0, false);
   }
