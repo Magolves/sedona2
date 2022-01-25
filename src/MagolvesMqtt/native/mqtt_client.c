@@ -38,12 +38,16 @@ static void mqtt_client_set_status(enum MqttConnectionState);
 static void changeListener(SedonaVM *vm, uint8_t *comp, void *slot);
 static void renderPayload(char *buffer, size_t *len, uint8_t *self,
                           uint16_t offset, uint16_t tid);
+static void renderPayloadAsJson(char *buffer, uint8_t *self, uint16_t offset,
+                                uint16_t tid);
 
 static volatile int status = STATUS_CONNECTING;
-/// @brief Comman path for assembling the topic during register
-
 #define MAX_PATH_LENGTH 512
-static char MQTT_PATH_BUFFER[MAX_PATH_LENGTH];
+/// @brief Common path for assembling the topic during registration
+static char MQTT_PATH_BUFFER[MAX_PATH_LENGTH + 1];
+#define MAX_JSON_LENGTH 512
+/// @brief Common buffer for JSON string rendering
+static char JSON_BUFFER[MAX_JSON_LENGTH + 1];
 
 ///////////////////////////////////////////////////////
 // Internal functions
@@ -235,16 +239,11 @@ void changeListener(SedonaVM *vm, uint8_t *self, void *slot) {
     args[0].aval = self;
     args[1].aval = slot;
 
-    char buffer[128];
-    size_t len = 0;
-    sprintf(buffer, "Slot %d [%d], %f", se->slot, se->tid,
-            sys_Component_getFloat(vm, args).fval);
-
-    renderPayload(buffer, &len, self, se->slot, se->tid);
-    log_info("Publish slot %s (%s, %d bytes, t=%d)\n", getSlotName(vm, slot),
-             buffer, len, se->tid);
-    mosquitto_publish(se->session, NULL, (const char *)se->path, len, buffer, 0,
-                      false);
+    renderPayloadAsJson(JSON_BUFFER, self, se->slot, se->tid);
+    log_info("Publish slot %s (%s, t=%d)\n", getSlotName(vm, slot), JSON_BUFFER,
+             se->tid);
+    mosquitto_publish(se->session, NULL, (const char *)se->path,
+                      strlen(JSON_BUFFER), JSON_BUFFER, 0, false);
   }
 }
 
@@ -277,6 +276,57 @@ void renderPayload(char *buffer, size_t *len, uint8_t *self, uint16_t offset,
   default:
     log_warn("Invalid tid %d", tid);
     *len = 0;
+    break;
+  }
+}
+
+void renderPayloadAsJson(char *buffer, uint8_t *self, uint16_t offset,
+                         uint16_t tid) {
+
+  switch (tid) {
+  case BoolTypeId:
+    // this line is required via C99 std; otherwise we get a compile error
+    // since every label mustfollowed by a statement and a
+    // decl is NOT a statement (sigh)
+    // We do not repeat ourselves, this is just language quirk
+    buffer[0] = 0;
+    uint8_t bl = getByte(self, offset);
+    snprintf(buffer, MAX_JSON_LENGTH, "{\"V\": %s}",
+             (bl > 0 ? "true" : "false"));
+    break;
+  case ByteTypeId:
+    buffer[0] = 0;
+    uint8_t b = getByte(self, offset);
+    snprintf(buffer, MAX_JSON_LENGTH, "{\"V\": %d}", b);
+    break;
+  case ShortTypeId:
+    buffer[0] = 0;
+    uint16_t s = getShort(self, offset);
+    snprintf(buffer, MAX_JSON_LENGTH, "{\"V\": %d}", s);
+    break;
+  case IntTypeId:
+    buffer[0] = 0;
+    int32_t i = getInt(self, offset);
+    snprintf(buffer, MAX_JSON_LENGTH, "{\"V\": %d}", i);
+    break;
+  case FloatTypeId:
+    buffer[0] = 0;
+    float f = getFloat(self, offset);
+    snprintf(buffer, MAX_JSON_LENGTH, "{\"V\": %.1f}", f);
+    break;
+  case DoubleTypeId:
+    buffer[0] = 0;
+    double d = (double)getWide(self, offset);
+    snprintf(buffer, MAX_JSON_LENGTH, "{\"V\": %.1f}", d);
+    break;
+  case BufTypeId:
+    buffer[0] = 0;
+    const char *str = getInline(self, offset);
+    sprintf(buffer, "{\"V\": \"%s\"}", str);
+    break;
+  default:
+    buffer[0] = 0;
+    sprintf(buffer, "{\"V\": \"(Invalid type id %d)\"}", tid);
     break;
   }
 }
