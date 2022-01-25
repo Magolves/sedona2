@@ -25,9 +25,20 @@ void mqtt_add_slot_entry(struct mosquitto *session, MQTT_SLOT_KEY_TYPE offset,
   }
 }
 
-struct mqtt_slot_entry *mqtt_find_slot_entry(MQTT_SLOT_KEY_TYPE offset) {
+const struct mqtt_slot_entry *mqtt_find_slot_entry(MQTT_SLOT_KEY_TYPE offset) {
   struct mqtt_slot_entry *s;
 
   HASH_FIND_INT(entries, &offset, s); /* s: output pointer */
   return s;
+}
+
+const struct mqtt_slot_entry *mqtt_find_path_entry(const char *path) {
+  struct mqtt_slot_entry *se, *tmp;
+  HASH_ITER(hh, entries, se, tmp) {
+    if (strncmp(path, se->path, MAX_PATH_LEN)) {
+      return se;
+    }
+  }
+
+  return NULL;
 }

@@ -99,6 +99,10 @@ Cell MagolvesMqtt_CbcMiddlewareService_startSession(SedonaVM *vm,
     mosquitto_log_callback_set(mosq, mqtt_log_callback);
     mosquitto_connect_v5_callback_set(mosq, mqtt_connect_callback_v5);
     mosquitto_disconnect_v5_callback_set(mosq, mqtt_disconnect_callback_v5);
+    mosquitto_message_v5_callback_set(mosq, mqtt_message_v5);
+    mosquitto_message_callback_set(mosq, mqtt_message);
+    mosquitto_subscribe_v5_callback_set(mosq, mqtt_subscribe_callback_v5);
+    mosquitto_subscribe_callback_set(mosq, mqtt_subscribe_callback);
 
     rc = mosquitto_loop_start(mosq);
 
@@ -210,11 +214,12 @@ Cell MagolvesMqtt_CbcMiddlewareService_exportSlot(SedonaVM *vm, Cell *params) {
   void *type = getCompType(vm, self);
   const char *typeName = getTypeName(vm, type);
 
+  // Assemble path
   MQTT_PATH_BUFFER[0] = 0;
   strncpy(MQTT_PATH_BUFFER, path, MAX_PATH_LENGTH);
   strncat(MQTT_PATH_BUFFER, "/", MAX_PATH_LENGTH);
   strncat(MQTT_PATH_BUFFER, getSlotName(vm, slot), MAX_PATH_LENGTH);
-
+  // Compute the hash key
   MQTT_SLOT_KEY_TYPE key =
       MagolvesMqtt_CbcMiddlewareService_computeSlotKey(vm, self, slot);
 
@@ -231,6 +236,11 @@ Cell MagolvesMqtt_CbcMiddlewareService_exportSlot(SedonaVM *vm, Cell *params) {
   mosquitto_publish(mosq, NULL, (const char *)"debug/reg",
                     strlen(MQTT_PATH_BUFFER), MQTT_PATH_BUFFER, 0, false);
 
+  MQTT_PATH_BUFFER[0] = 0;
+  strncpy(MQTT_PATH_BUFFER, path, MAX_PATH_LENGTH);
+  strncat(MQTT_PATH_BUFFER, "/+", MAX_PATH_LENGTH);
+  mosquitto_subscribe_v5(mosq, NULL, MQTT_PATH_BUFFER, 0 /*qos*/,
+                         0 /* options*/, NULL);
   return trueCell;
 }
 
