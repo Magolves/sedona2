@@ -19,7 +19,7 @@ void mqtt_add_slot_entry(struct mosquitto *session, MQTT_SLOT_KEY_TYPE offset,
 
     log_info("Added slot entry %s (%d)", path, strlen(path));
     // s->path = malloc((strlen(path) + 1) * sizeof(char));
-    strncpy((char *)s->path, (const char *)(path + 1), MAX_PATH_LEN);
+    strncpy((char *)s->path, (const char *)path, MAX_PATH_LEN);
 
     HASH_ADD_INT(entries, offset, s); /* slot: name of key field */
   }

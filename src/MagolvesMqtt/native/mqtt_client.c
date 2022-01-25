@@ -31,9 +31,11 @@
 extern void sys_component_on_change(void (*set_callback)(SedonaVM *vm,
                                                          uint8_t *comp,
                                                          void *slot));
-extern Cell sys_Component_getFloat(SedonaVM *vm, Cell *params);
 
 static void mqtt_client_set_status(enum MqttConnectionState);
+static MQTT_SLOT_KEY_TYPE
+MagolvesMqtt_CbcMiddlewareService_computeSlotKey(SedonaVM *vm, uint8_t *self,
+                                                 void *slot);
 
 static void changeListener(SedonaVM *vm, uint8_t *comp, void *slot);
 static void renderPayload(char *buffer, size_t *len, uint8_t *self,
@@ -213,13 +215,15 @@ Cell MagolvesMqtt_CbcMiddlewareService_exportSlot(SedonaVM *vm, Cell *params) {
   strncat(MQTT_PATH_BUFFER, "/", MAX_PATH_LENGTH);
   strncat(MQTT_PATH_BUFFER, getSlotName(vm, slot), MAX_PATH_LENGTH);
 
+  MQTT_SLOT_KEY_TYPE key =
+      MagolvesMqtt_CbcMiddlewareService_computeSlotKey(vm, self, slot);
+
   log_info("Register slot %p \n\t((k=0x%x), self=%p, qn=%s, n=%s, t=%d, off=%d "
            "(0x%x), p=%s -> %s",
-           slot, (MQTT_SLOT_KEY_TYPE)slot, self, typeName,
-           getSlotName(vm, slot), typeId, offset, offset, path,
-           MQTT_PATH_BUFFER);
+           slot, (MQTT_SLOT_KEY_TYPE)key, self, typeName, getSlotName(vm, slot),
+           typeId, offset, offset, path, MQTT_PATH_BUFFER);
 
-  mqtt_add_slot_entry(mosq, (MQTT_SLOT_KEY_TYPE)slot, typeId, offset,
+  mqtt_add_slot_entry(mosq, (MQTT_SLOT_KEY_TYPE)key, typeId, offset,
                       MQTT_PATH_BUFFER);
 
   log_info("Added slot to map %p", slot);
@@ -232,7 +236,11 @@ Cell MagolvesMqtt_CbcMiddlewareService_exportSlot(SedonaVM *vm, Cell *params) {
 
 void changeListener(SedonaVM *vm, uint8_t *self, void *slot) {
   // log_info("Check slot to map s=%p (0x%x)", slot, (MQTT_SLOT_KEY_TYPE)slot);
-  struct mqtt_slot_entry *se = mqtt_find_slot_entry((MQTT_SLOT_KEY_TYPE)slot);
+
+  MQTT_SLOT_KEY_TYPE key =
+      MagolvesMqtt_CbcMiddlewareService_computeSlotKey(vm, self, slot);
+
+  struct mqtt_slot_entry *se = mqtt_find_slot_entry((MQTT_SLOT_KEY_TYPE)key);
   if (se != NULL) {
 
     Cell args[2];
@@ -329,4 +337,11 @@ void renderPayloadAsJson(char *buffer, uint8_t *self, uint16_t offset,
     sprintf(buffer, "{\"V\": \"(Invalid type id %d)\"}", tid);
     break;
   }
+}
+
+MQTT_SLOT_KEY_TYPE
+MagolvesMqtt_CbcMiddlewareService_computeSlotKey(SedonaVM *vm, uint8_t *self,
+                                                 void *slot) {
+  uint16_t offset = getSlotHandle(vm, slot);
+  return (self - vm->dataBaseAddr) + offset;
 }
