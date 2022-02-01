@@ -1,0 +1,181 @@
+class MiddlewareService extends Service
+{
+  ////////////////////////////////////////////////////////////////
+  // Properties
+  ////////////////////////////////////////////////////////////////
+  @config @asStr property Buf(64) host
+  @config property int port = 1883
+
+  @config @asStr property Buf(16) clientid
+  @config @asStr property Buf(16) username
+  @config @asStr property Buf(16) password
+  
+  @config property bool autoStart = true
+
+  define int Connecting = 0
+  define int Handshake = 1
+  define int Connected = 2
+  define int GoodBye = 3
+  define int Disconnected = 4
+  define int InternalError = 5
+  define int Down = 6
+
+  define Str NetworkStatus = "Connecting, Handshake, Connected, GoodBye, Disconnected, InternalError, Down"
+  @range=NetworkStatus
+  @readonly property byte status = Disconnected
+
+  ////////////////////////////////////////////////////////////////
+  // Life cycle
+  ////////////////////////////////////////////////////////////////
+
+  **
+  ** Init and start CBC middleware service 
+  **
+  virtual override void start()
+  {
+    if (autoStart)
+      connect()
+  }
+
+  ** 
+  ** Stop middleware service
+  ** 
+  virtual override void stop()
+  {
+    disconnect()
+  }
+
+  **
+  ** disconnect and reconnect to MQTT broker
+  **
+  action void reconnect()
+  {
+    disconnect();
+    status := getStatus();
+    connect();
+  }
+
+
+  ** 
+  ** connect to MQTT broker and start a new session
+  ** 
+  action void connect()
+  {
+    if (status == Connecting || status == Connected || handle != null)
+      return
+
+    handle = startSession(host.toStr(), port, clientid.toStr(), username.toStr(), password.toStr())
+    if (handle != null) {
+      log.message("Connected")
+      sessionStartTime = Sys.ticks()
+    } else {      
+      log.error("Connection")
+    }
+    status := getStatus()
+  }
+
+  ** 
+  ** close the current MQTT session and disconnect to MQTT broker
+  ** 
+  action void disconnect()
+  {
+    if (handle == null || status == Disconnected)
+      return
+
+    status := GoodBye
+    stopSession(handle);
+    status := getStatus()
+  }
+
+  ////////////////////////////////////////////////////////////////
+  // Methods
+  ////////////////////////////////////////////////////////////////
+  public Obj getHandle()
+  {
+    if (isSessionLive(handle))
+      return handle
+    else
+      return null
+  }
+
+  
+  // natives 
+  **
+  ** Start a middleware session to given host:port using clientid, username and password.
+  ** a session handle object will be returned, that will be used by later
+  ** native calls on this session.
+  ** 
+  static native Obj startSession(Str host, int port, Str clientid, Str username, Str password)
+
+  ** 
+  ** stop the middleware session for given session handle object
+  ** 
+  static native bool stopSession(Obj handle)
+
+  ** 
+  ** check if session for given session handle object live or not 
+  ** 
+  static native bool isSessionLive(Obj handle)
+
+  ** 
+  ** Get the connection state
+  ** 
+  static native int getStatus()
+
+  ** 
+  ** Register read-only slot like measured or computed values that are supposed to 
+  ** be changed periodically. They are only published on change.
+  **
+  static native bool registerReadOnlySlot(Obj handle, Component component, Slot slot, Str path);
+
+  ** 
+  ** Register writable slot independent regarding their persistence or keep-alive policy. 
+  ** The difference to monitor values is that the Sedona adapter will also submit a 
+  ** subscription to the broker so that write requests on that parameter are forwarded 
+  ** from other clients.
+  **
+  static native bool registerWritableSlot(Obj handle, Component component, Slot slot, Str path);
+
+  ** 
+  ** Register action slot
+  **
+  static native bool registerAction(Obj handle, Component component, Slot slot, Str path)
+
+  ** 
+  ** Check if given component has at least one registered slot.
+  **
+  static native bool isComponentRegistered(Obj handle, Component c)
+
+  ** 
+  ** Check if given component is registered.
+  **
+  static native bool isSlotRegistered(Obj handle, Component component, Slot slot)
+
+  ** 
+  ** Unregister the given slot from the middleware.
+  **
+  static native bool unregisterSlot(Obj handle, Component component, Slot slot)
+
+  **
+  ** Enables (disables) all slots of the given component if condition is true (false).
+  **
+  static native bool enableComponentIf(Obj handle, Component component, bool condition)
+
+  **
+  ** Enables (disables) the given slot if condition is true (false).
+  **
+  static native bool enableSlotIf(Obj handle, Component component, Slot slot, bool condition)
+
+    **
+  ** Check the given slot is enabled or disabled.
+  **
+  static native bool isSlotEnabled(Obj handle, Component component, Slot slot)
+
+  ////////////////////////////////////////////////////////////////
+  // Fields
+  ////////////////////////////////////////////////////////////////
+  define Log log
+
+  private Obj handle = null
+  private long sessionStartTime = 0L
+}

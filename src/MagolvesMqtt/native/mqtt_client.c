@@ -11,7 +11,6 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,19 +30,15 @@
 extern void sys_component_on_change(void (*set_callback)(SedonaVM *vm,
                                                          uint8_t *comp,
                                                          void *slot));
+extern Cell sys_Component_getFloat(SedonaVM *vm, Cell *params);
 
 static void mqtt_client_set_status(enum MqttConnectionState);
-static MQTT_SLOT_KEY_TYPE
-MagolvesMqtt_CbcMiddlewareService_computeSlotKey(SedonaVM *vm, uint8_t *self,
-                                                 void *slot);
 
 static void changeListener(SedonaVM *vm, uint8_t *comp, void *slot);
-static void renderPayload(char *buffer, size_t *len, uint8_t *self,
-                          uint16_t offset, uint16_t tid);
-static void renderPayloadAsJson(char *buffer, uint8_t *self, uint16_t offset,
-                                uint16_t tid);
 
 static volatile int status = STATUS_CONNECTING;
+
+/// @brief Comman path for assembling the topic during register
 #define MAX_PATH_LENGTH 512
 /// @brief Common path for assembling the topic during registration
 static char MQTT_PATH_BUFFER[MAX_PATH_LENGTH + 1];
@@ -58,6 +53,18 @@ static char JSON_BUFFER[MAX_JSON_LENGTH + 1];
 void mqtt_client_set_status(enum MqttConnectionState new_status) {
   status = new_status;
 }
+
+MQTT_SLOT_KEY_TYPE
+MagolvesMqtt_MiddlewareService_computeSlotKey(SedonaVM *vm, uint8_t *self,
+                                              void *slot);
+
+void renderPayload(char *buffer, size_t *len, uint8_t *self, uint16_t offset,
+                   uint16_t tid);
+void renderPayloadAsJson(char *buffer, uint8_t *self, uint16_t offset,
+                         uint16_t tid);
+
+Cell MagolvesMqtt_MiddlewareService_export(SedonaVM *vm, Cell *params,
+                                           int flags);
 
 ///////////////////////////////////////////////////////
 // Native Method Slots
@@ -74,8 +81,7 @@ void mqtt_client_set_status(enum MqttConnectionState new_status) {
 /// @param vm the VM instance
 /// @param params the paramater array
 /// @return Cell trueCell, if successful
-Cell MagolvesMqtt_CbcMiddlewareService_startSession(SedonaVM *vm,
-                                                    Cell *params) {
+Cell MagolvesMqtt_MiddlewareService_startSession(SedonaVM *vm, Cell *params) {
   char *host = params[0].aval;
   int32_t port = params[1].ival;
   char *clientid = params[2].aval;
@@ -144,7 +150,7 @@ Cell MagolvesMqtt_CbcMiddlewareService_startSession(SedonaVM *vm,
 /// @param vm the VM instance
 /// @param params the paramater array
 /// @return Cell trueCell, if successful
-Cell MagolvesMqtt_CbcMiddlewareService_stopSession(SedonaVM *vm, Cell *params) {
+Cell MagolvesMqtt_MiddlewareService_stopSession(SedonaVM *vm, Cell *params) {
   struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
   if (!mosq)
     return falseCell;
@@ -164,8 +170,7 @@ Cell MagolvesMqtt_CbcMiddlewareService_stopSession(SedonaVM *vm, Cell *params) {
 /// @param vm the VM instance
 /// @param params the paramater array
 /// @return Cell trueCell, if session is alive/connected
-Cell MagolvesMqtt_CbcMiddlewareService_isSessionLive(SedonaVM *vm,
-                                                     Cell *params) {
+Cell MagolvesMqtt_MiddlewareService_isSessionLive(SedonaVM *vm, Cell *params) {
   struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
   if (!mosq)
     return falseCell;
@@ -178,7 +183,7 @@ Cell MagolvesMqtt_CbcMiddlewareService_isSessionLive(SedonaVM *vm,
 /// @param vm the VM instance
 /// @param params the paramater array
 /// @return Cell the connection status in ival
-Cell MagolvesMqtt_CbcMiddlewareService_getStatus(SedonaVM *vm, Cell *params) {
+Cell MagolvesMqtt_MiddlewareService_getStatus(SedonaVM *vm, Cell *params) {
   Cell result = {status};
   return result;
 }
@@ -189,7 +194,7 @@ Cell MagolvesMqtt_CbcMiddlewareService_getStatus(SedonaVM *vm, Cell *params) {
 /// @param vm the VM instance
 /// @param params the paramater array
 /// @return Cell the result
-Cell MagolvesMqtt_CbcMiddlewareService_execute(SedonaVM *vm, Cell *params) {
+Cell MagolvesMqtt_MiddlewareService_execute(SedonaVM *vm, Cell *params) {
   struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
 
   // Parameters
@@ -203,23 +208,22 @@ Cell MagolvesMqtt_CbcMiddlewareService_execute(SedonaVM *vm, Cell *params) {
   return trueCell;
 }
 
-Cell MagolvesMqtt_CbcMiddlewareService_exportMonitor(SedonaVM *vm,
-                                                     Cell *params) {
-  MagolvesMqtt_CbcMiddlewareService_export(vm, params, EXPORT_MONITOR);
+Cell MagolvesMqtt_MiddlewareService_registerReadOnlySlot(SedonaVM *vm,
+                                                         Cell *params) {
+  MagolvesMqtt_MiddlewareService_export(vm, params, EXPORT_MONITOR);
 }
 
-Cell MagolvesMqtt_CbcMiddlewareService_exportParameter(SedonaVM *vm,
-                                                       Cell *params) {
-  MagolvesMqtt_CbcMiddlewareService_export(vm, params, EXPORT_PARAMETER);
+Cell MagolvesMqtt_MiddlewareService_registerWritableSlot(SedonaVM *vm,
+                                                         Cell *params) {
+  MagolvesMqtt_MiddlewareService_export(vm, params, EXPORT_PARAMETER);
 }
 
-Cell MagolvesMqtt_CbcMiddlewareService_exportAction(SedonaVM *vm,
-                                                    Cell *params) {
-  MagolvesMqtt_CbcMiddlewareService_export(vm, params, EXPORT_ACTION);
+Cell MagolvesMqtt_MiddlewareService_registerAction(SedonaVM *vm, Cell *params) {
+  MagolvesMqtt_MiddlewareService_export(vm, params, EXPORT_ACTION);
 }
 
-Cell MagolvesMqtt_CbcMiddlewareService_export(SedonaVM *vm, Cell *params,
-                                              int flags) {
+Cell MagolvesMqtt_MiddlewareService_export(SedonaVM *vm, Cell *params,
+                                           int flags) {
   struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
   uint8_t *self = params[1].aval;
   void *slot = params[2].aval;
@@ -237,7 +241,7 @@ Cell MagolvesMqtt_CbcMiddlewareService_export(SedonaVM *vm, Cell *params,
   strncat(MQTT_PATH_BUFFER, getSlotName(vm, slot), MAX_PATH_LENGTH);
   // Compute the hash key
   MQTT_SLOT_KEY_TYPE key =
-      MagolvesMqtt_CbcMiddlewareService_computeSlotKey(vm, self, slot);
+      MagolvesMqtt_MiddlewareService_computeSlotKey(vm, self, slot);
 
   log_info("Register slot %p \n\t((k=0x%x), self=%p, qn=%s, n=%s, t=%d, off=%d "
            "(0x%x), p=%s -> %s",
@@ -260,11 +264,35 @@ Cell MagolvesMqtt_CbcMiddlewareService_export(SedonaVM *vm, Cell *params,
   return trueCell;
 }
 
+Cell MagolvesMqtt_MiddlewareService_isComponentRegistered(SedonaVM *vm,
+                                                          Cell *params) {
+  return falseCell;
+}
+
+Cell MagolvesMqtt_MiddlewareService_isSlotRegistered(SedonaVM *vm,
+                                                     Cell *params) {
+  return falseCell;
+}
+Cell MagolvesMqtt_MiddlewareService_unregisterSlot(SedonaVM *vm, Cell *params) {
+  return falseCell;
+}
+
+Cell MagolvesMqtt_MiddlewareService_enableComponentIf(SedonaVM *vm,
+                                                      Cell *params) {
+  return falseCell;
+}
+Cell MagolvesMqtt_MiddlewareService_enableSlotIf(SedonaVM *vm, Cell *params) {
+  return falseCell;
+}
+Cell MagolvesMqtt_MiddlewareService_isSlotEnabled(SedonaVM *vm, Cell *params) {
+  return falseCell;
+}
+
 void changeListener(SedonaVM *vm, uint8_t *self, void *slot) {
   // log_info("Check slot to map s=%p (0x%x)", slot, (MQTT_SLOT_KEY_TYPE)slot);
 
   MQTT_SLOT_KEY_TYPE key =
-      MagolvesMqtt_CbcMiddlewareService_computeSlotKey(vm, self, slot);
+      MagolvesMqtt_MiddlewareService_computeSlotKey(vm, self, slot);
 
   const struct mqtt_slot_entry *se =
       mqtt_find_slot_entry((MQTT_SLOT_KEY_TYPE)key);
@@ -368,8 +396,8 @@ void renderPayloadAsJson(char *buffer, uint8_t *self, uint16_t offset,
 }
 
 MQTT_SLOT_KEY_TYPE
-MagolvesMqtt_CbcMiddlewareService_computeSlotKey(SedonaVM *vm, uint8_t *self,
-                                                 void *slot) {
+MagolvesMqtt_MiddlewareService_computeSlotKey(SedonaVM *vm, uint8_t *self,
+                                              void *slot) {
   uint16_t offset = getSlotHandle(vm, slot);
   return (self - vm->dataBaseAddr) + offset;
 }
