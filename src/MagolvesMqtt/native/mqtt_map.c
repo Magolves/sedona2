@@ -29,22 +29,31 @@ void mqtt_add_slot_entry(struct mosquitto *session, MQTT_SLOT_KEY_TYPE key,
 }
 
 const struct mqtt_slot_entry *mqtt_find_slot_entry(MQTT_SLOT_KEY_TYPE key) {
-  struct mqtt_slot_entry *s;
+  struct mqtt_slot_entry *entry;
 
-  HASH_FIND_INT(entries, &key, s); /* s: output pointer */
-  return s;
+  HASH_FIND_INT(entries, &key, entry); /* s: output pointer */
+  return entry;
 }
 
 const struct mqtt_slot_entry *mqtt_find_path_entry(const char *path) {
-  struct mqtt_slot_entry *se, *tmp;
-  HASH_ITER(hh, entries, se, tmp) {
-    log_info("Check\n%s\n%s", path, se->path);
-    if (strcmp(path, se->path) == 0) {
-      return se;
+  struct mqtt_slot_entry *entry, *tmp;
+
+  HASH_ITER(hh, entries, entry, tmp) {
+    log_info("Check\n%s\n%s", path, entry->path);
+    if (strcmp(path, entry->path) == 0) {
+      return entry;
     }
   }
 
   return NULL;
+}
+
+void mqtt_remove_all() {
+  struct mqtt_slot_entry *entry, *tmp;
+  HASH_ITER(hh, entries, entry, tmp) {
+    HASH_DEL(entries, entry); /* delete; entries advances to next */
+    free(entry);              /* optional- if you want to free  */
+  }
 }
 
 int mqtt_map_size() { return HASH_COUNT(entries); }
