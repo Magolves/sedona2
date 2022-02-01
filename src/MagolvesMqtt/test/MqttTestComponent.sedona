@@ -1,9 +1,13 @@
-class MqttComponent extends Component {
-  ** deadband centered around setPoint
-  @config @summary property float hysteresis = 6.0f
+class MqttTestComponent extends Component {
+  define int TOPIC_STR_LEN = 256;
+
+  @config @asStr property Buf(TOPIC_STR_LEN) mqttTopic = "root"
+
+      ** deadband centered around setPoint
+  @config @summary property float hyst = 6.0f
 
   ** set true to put into heating mode
-  @config @summary property bool enabled = true
+  @config @summary property bool  enabled = true
 
   ** the setpoint
   @config @summary property float setPoint = 50.0
@@ -24,13 +28,13 @@ class MqttComponent extends Component {
   **
   virtual override void execute()
   {
-    float lowTemp = setPoint - hysteresis
+    float lowTemp = setPoint - hyst
     
     if (isHeating)
       isHeating := enabled && actualTemp <= setPoint
     else
       isHeating := enabled && actualTemp <= lowTemp 
-/*
+
     if (Sys.ticks() % 10000L == 0L)
     {
       if (isHeating)
@@ -38,7 +42,9 @@ class MqttComponent extends Component {
       else if (actualTemp > 10.0)
         actualTemp := actualTemp - 0.02
       //Sys.out.print("actualTemp changed to $actualTemp").nl()
-    }*/
+
+
+    }
    
   }
 
@@ -58,16 +64,11 @@ class MqttComponent extends Component {
       }
 
       Str path = MiddlewareService.getTopicFromPath(this)
-      Obj h = service.getHandle()
-      if (h != null) {
-        MiddlewareService.registerReadOnlySlot(h, this, type.findSlot("actualTemp"), path)
-        MiddlewareService.registerReadOnlySlot(h, this, type.findSlot("setPoint"), path)
-        MiddlewareService.registerWritableSlot(h, this, type.findSlot("enabled"), path)      
-        MiddlewareService.registerReadOnlySlot(h, this, type.findSlot("isHeating"), path) 
-        registered = true
-      } else {
-        App.log.error("Session not active")
-      }
+      MiddlewareService.registerReadOnlySlot(service.getHandle(), this, type.findSlot("actualTemp"), path)
+      MiddlewareService.registerReadOnlySlot(service.getHandle(), this, type.findSlot("setPoint"), path)
+      MiddlewareService.registerWritableSlot(service.getHandle(), this, type.findSlot("enabled"), path)      
+      MiddlewareService.registerReadOnlySlot(service.getHandle(), this, type.findSlot("isHeating"), path) 
+      registered = true
   }
 
   bool registered = false

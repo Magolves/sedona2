@@ -1,5 +1,5 @@
-#ifndef MQTT_CLIENT_H
-#define MQTT_CLIENT_H
+#ifndef MQTT_CLIENT
+#define MQTT_CLIENT
 
 #include "sedona.h"
 
@@ -25,13 +25,19 @@ Cell MagolvesMqtt_MiddlewareService_isComponentRegistered(SedonaVM *vm,
 Cell MagolvesMqtt_MiddlewareService_isSlotRegistered(SedonaVM *vm,
                                                      Cell *params);
 Cell MagolvesMqtt_MiddlewareService_unregisterSlot(SedonaVM *vm, Cell *params);
+Cell MagolvesMqtt_MiddlewareService_unregisterAllSlots(SedonaVM *vm,
+                                                       Cell *params);
 
 Cell MagolvesMqtt_MiddlewareService_enableComponentIf(SedonaVM *vm,
                                                       Cell *params);
 Cell MagolvesMqtt_MiddlewareService_enableSlotIf(SedonaVM *vm, Cell *params);
 Cell MagolvesMqtt_MiddlewareService_isSlotEnabled(SedonaVM *vm, Cell *params);
 
+Cell MagolvesMqtt_MiddlewareService_getRegisteredSlotCount(SedonaVM *vm,
+                                                           Cell *params);
+
+// Internal methods (not exposed to Sedona)
 Cell MagolvesMqtt_MiddlewareService_registerSlot(SedonaVM *vm, Cell *params);
 Cell MagolvesMqtt_MiddlewareService_execute(SedonaVM *vm, Cell *params);
 
-#endif /* MQTT_CLIENT_H */
+#endif /* MQTT_CLIENT */
