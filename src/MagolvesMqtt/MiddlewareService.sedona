@@ -10,7 +10,7 @@ class MiddlewareService extends Service
   @config @asStr property Buf(16) username
   @config @asStr property Buf(16) password
   
-  @config property bool autoStart = true
+  @config property bool autoStart = false
 
   define int Connecting = 0
   define int Handshake = 1

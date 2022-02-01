@@ -16,6 +16,7 @@
 
   <!-- Source Directories -->
   <source dir="." />
+  <source dir="test" testonly="true"/>
   
   <!-- Natives -->
   <native qname="MagolvesMqtt::MiddlewareService.startSession"    id="51::0"  />

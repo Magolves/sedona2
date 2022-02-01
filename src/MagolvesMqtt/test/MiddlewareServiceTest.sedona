@@ -1,0 +1,20 @@
+@palette=false
+public class MiddlewareServiceTest extends Test
+{
+  
+  static void testConnect() 
+  {
+    App.log.message("@@@ NOTE: the MQTT kit test needs a local MQTT broker(mosquitto recommended) installed and listen at localhost:1883 @@@")
+    //set up service first
+    App a = Sys.app
+    MiddlewareService s = (MiddlewareService)a.add(a, "mqtt", MiddlewareService.type)
+
+    s.host.copyFromStr("localhost")
+    s.clientid.copyFromStr("MqttTest")
+    s.connect()
+    assert(s.status == MiddlewareService.Connected)
+
+    s.disconnect()
+    assert(s.status == MiddlewareService.Disconnected)
+  }
+}
