@@ -20,16 +20,7 @@ class MqttComponent extends Component {
 
   virtual override void start()
   {
-      CbcMiddlewareService service = (CbcMiddlewareService)Sys.app.lookupService(CbcMiddlewareService.type)
-      if (service == null) {
-        App.log.error("CbcMiddlewareService is missing")
-        return
-      }
-
-      CbcMiddlewareService.exportMonitor(service.getHandle(), this, type.findSlot("actualTemp"), mqttTopic.toStr())
-      CbcMiddlewareService.exportMonitor(service.getHandle(), this, type.findSlot("setPoint"), mqttTopic.toStr())
-      CbcMiddlewareService.exportParameter(service.getHandle(), this, type.findSlot("enabled"), mqttTopic.toStr())      
-      CbcMiddlewareService.exportMonitor(service.getHandle(), this, type.findSlot("isHeating"), mqttTopic.toStr())      
+      registerMqtt()
   }
 
   **
@@ -54,5 +45,30 @@ class MqttComponent extends Component {
 
 
     }
+   
   }
+
+  action void regMqtt()
+  {
+    registerMqtt()
+  }
+
+
+  private void registerMqtt() {
+    //if (registered) return
+
+    MiddlewareService service = (MiddlewareService)Sys.app.lookupService(MiddlewareService.type)
+      if (service == null) {
+        App.log.error("MiddlewareService is missing")
+        return
+      }
+
+      MiddlewareService.registerReadOnlySlot(service.getHandle(), this, type.findSlot("actualTemp"), mqttTopic.toStr())
+      MiddlewareService.registerReadOnlySlot(service.getHandle(), this, type.findSlot("setPoint"), mqttTopic.toStr())
+      MiddlewareService.registerWritableSlot(service.getHandle(), this, type.findSlot("enabled"), mqttTopic.toStr())      
+      MiddlewareService.registerReadOnlySlot(service.getHandle(), this, type.findSlot("isHeating"), mqttTopic.toStr()) 
+      registered = true
+  }
+
+  bool registered = false
 }
