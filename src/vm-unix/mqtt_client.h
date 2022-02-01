@@ -25,6 +25,8 @@ Cell MagolvesMqtt_MiddlewareService_isComponentRegistered(SedonaVM *vm,
 Cell MagolvesMqtt_MiddlewareService_isSlotRegistered(SedonaVM *vm,
                                                      Cell *params);
 Cell MagolvesMqtt_MiddlewareService_unregisterSlot(SedonaVM *vm, Cell *params);
+Cell MagolvesMqtt_MiddlewareService_unregisterAllSlots(SedonaVM *vm,
+                                                       Cell *params);
 
 Cell MagolvesMqtt_MiddlewareService_enableComponentIf(SedonaVM *vm,
                                                       Cell *params);

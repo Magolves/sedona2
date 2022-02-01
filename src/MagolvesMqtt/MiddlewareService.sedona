@@ -14,7 +14,14 @@ class MiddlewareService extends Service
   @config @asStr property Buf(16) username
   @config @asStr property Buf(16) password
   
-  @config property bool autoStart = true
+  @config property bool autoStart = false
+
+  @config property int componentsPerCycle = 1
+
+  @unit=Units.percent
+  @readonly property float componentsScanned = 0.0
+
+  @readonly property int registeredSlots = 0
 
   define int Connecting = 0
   define int Handshake = 1
@@ -79,6 +86,18 @@ class MiddlewareService extends Service
   }
 
   ** 
+  ** Removes all slot registrations and restart scanning for 'regMqtt' methods
+  ** 
+  action void restartScan()
+  {
+    if (handle != null) {
+      curCompId = 0
+      registeredSlots := 0
+      unregisterAllSlots(handle)
+    }
+  }
+
+  ** 
   ** close the current MQTT session and disconnect to MQTT broker
   ** 
   action void disconnect()
@@ -91,6 +110,50 @@ class MiddlewareService extends Service
     status := getStatus()
   }
 
+  **
+  ** Perform a chunk of background work.  Return true
+  ** if there is pending work or false if the service is
+  ** done working this cycle.
+  **
+  ** A service should be designed to function correctly no
+  ** matter how many times work is called per execution cycle.
+  ** Returning false is not a guarantee that work will not be
+  ** called again in a given execution cycle; rather, it is
+  ** a hint to the App execution engine that this service does
+  ** not have any more work to do.
+  **
+  ** If you only want to do work once per execution cycle, you should consider:
+  **
+  ** 1) Moving your work into the execute() callback. execute() will only be
+  ** called once per execution cycle.
+  **
+  ** 2) Set a "newCycle" flag in your execute() method and unset it after
+  ** doing one work cycle.  Only do your work if the newCycle flag is set.
+  **
+  override bool work()
+  {
+    if(!Sys.app.isSteadyState())
+      return false
+
+    if (handle == null)
+      return false
+
+    App app = Sys.app
+    if (curCompId >= app.compsLen)
+      return false
+    
+    // Visit all components
+    for(int i = 0; i < componentsPerCycle; i++) {
+        registerComponent(app.comps[curCompId++])
+        componentsScanned := 100.0 * (float)curCompId / (float)app.compsLen        
+    }
+    registeredSlots := getRegisteredSlots(handle)
+    log.message("Scanned $curCompId/$app.compsLen ($componentsScanned%, $registeredSlots slots)")
+
+    return curCompId < app.compsLen
+  }
+
+
   ////////////////////////////////////////////////////////////////
   // Methods
   ////////////////////////////////////////////////////////////////
@@ -100,6 +163,21 @@ class MiddlewareService extends Service
       return handle
     else
       return null
+  }
+
+  private void registerComponent(Component c)
+  {
+    if (c == null)
+      return
+
+    Type t = c.type
+    log.message("Check $c.name [$c.type.name]...")
+
+    Slot regAction = t.findSlot("regMqtt")
+    if (regAction != null) {
+      log.message("Register $c.name ...")
+      invokeVoid(regAction)
+    }
   }
 
   ** Get the MQTT topic from the component path
@@ -181,6 +259,11 @@ class MiddlewareService extends Service
   **
   static native bool unregisterSlot(Obj handle, Component component, Slot slot)
 
+  ** 
+  ** Unregister the given slot from the middleware.
+  **
+  static native bool unregisterAllSlots(Obj handle)
+
   **
   ** Enables (disables) all slots of the given component if condition is true (false).
   **
@@ -199,7 +282,7 @@ class MiddlewareService extends Service
   **
   ** Get the number of registered slots.
   **
-  static native int getRegisteredSlots()
+  static native int getRegisteredSlots(Obj handle)
 
   ////////////////////////////////////////////////////////////////
   // Fields
@@ -207,5 +290,6 @@ class MiddlewareService extends Service
   define Log log
 
   private Obj handle = null
+  private int curCompId = 0
   private long sessionStartTime = 0L
 }

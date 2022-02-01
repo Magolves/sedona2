@@ -278,6 +278,13 @@ Cell MagolvesMqtt_MiddlewareService_unregisterSlot(SedonaVM *vm, Cell *params) {
   return falseCell;
 }
 
+Cell MagolvesMqtt_MiddlewareService_unregisterAllSlots(SedonaVM *vm,
+                                                       Cell *params) {
+
+  mqtt_remove_all();
+  return zeroCell;
+}
+
 Cell MagolvesMqtt_MiddlewareService_getRegisteredSlots(SedonaVM *vm,
                                                        Cell *params) {
 

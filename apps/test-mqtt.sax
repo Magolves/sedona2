@@ -48,6 +48,7 @@
     </comp>
     <comp name="mqtt" type="MagolvesMqtt::MiddlewareService">
 	    <prop name="host" val="localhost"/>
+      <prop name="autoStart" val="true"/>
     </comp>
   </comp>
   <!-- /play -->
@@ -55,13 +56,16 @@
     <!-- /play/rampA -->
     <comp name="hc1" type="MagolvesMqttKit::MqttComponent">
       <prop name="actual" val="20.00000"/>
-      <prop name="setPoint" val="25.00000"/>
-      <prop name="mqttTopic" val="hc1"/>      
+      <prop name="setPoint" val="25.00000"/>      
     </comp>    
     <comp name="hc2" type="MagolvesMqttKit::MqttComponent">
       <prop name="actual" val="30.00000"/>
-      <prop name="setPoint" val="45.00000"/>
-      <prop name="mqttTopic" val="hc2"/>      
+      <prop name="setPoint" val="45.00000"/>      
+    </comp>    
+    <comp name="hc3" type="MagolvesMqttKit::MqttComponent">
+      <prop name="actual" val="11.00000"/>
+      <prop name="setPoint" val="15.00000"/>      
+      <prop name="enabled" val="false"/>
     </comp>    
   </comp>
 </app>

@@ -51,6 +51,9 @@ const struct mqtt_slot_entry *mqtt_find_path_entry(const char *path);
 /// @return const struct mqtt_slot_entry* the matching map entry or NULL
 const struct mqtt_slot_entry *mqtt_find_slot_entry(MQTT_SLOT_KEY_TYPE key);
 
+/// @brief Remove all entries from the map.
+void mqtt_remove_all();
+
 /// @brief Get the  number of map entries
 ///
 /// @return int
