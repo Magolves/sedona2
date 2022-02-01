@@ -33,8 +33,27 @@ void mqtt_add_slot_entry(struct mosquitto *session, MQTT_SLOT_KEY_TYPE key,
                          uint8_t *self, uint8_t sid, uint8_t tid,
                          const char *path);
 
+/// @brief Finds an entry matching the given key.
+///
+/// @param path the key to match
+/// @return const struct mqtt_slot_entry* the matching map entry or NULL
 const struct mqtt_slot_entry *mqtt_find_slot_entry(MQTT_SLOT_KEY_TYPE key);
 
+/// @brief Finds an entry matching the given path.
+///
+/// @param path the path to match
+/// @return const struct mqtt_slot_entry* the matching map entry or NULL
 const struct mqtt_slot_entry *mqtt_find_path_entry(const char *path);
+
+/// @brief Removes the entry with the given key
+///
+/// @param path the key to match
+/// @return const struct mqtt_slot_entry* the matching map entry or NULL
+const struct mqtt_slot_entry *mqtt_find_slot_entry(MQTT_SLOT_KEY_TYPE key);
+
+/// @brief Get the  number of map entries
+///
+/// @return int
+int mqtt_map_size();
 
 #endif /* MQTT_MAP */

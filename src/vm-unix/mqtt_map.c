@@ -40,10 +40,11 @@ const struct mqtt_slot_entry *mqtt_find_path_entry(const char *path) {
   HASH_ITER(hh, entries, se, tmp) {
     log_info("Check\n%s\n%s", path, se->path);
     if (strcmp(path, se->path) == 0) {
-
       return se;
     }
   }
 
   return NULL;
 }
+
+int mqtt_map_size() { return HASH_COUNT(entries); }

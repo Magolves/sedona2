@@ -191,10 +191,15 @@ class MiddlewareService extends Service
   **
   static native bool enableSlotIf(Obj handle, Component component, Slot slot, bool condition)
 
-    **
+  **
   ** Check the given slot is enabled or disabled.
   **
   static native bool isSlotEnabled(Obj handle, Component component, Slot slot)
+
+  **
+  ** Get the number of registered slots.
+  **
+  static native int getRegisteredSlots()
 
   ////////////////////////////////////////////////////////////////
   // Fields

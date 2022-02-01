@@ -4,6 +4,7 @@
 #include "log.h"
 #include "mqtt_callbacks.h"
 #include "mqtt_map.h"
+#include "sedona.h"
 
 // Mosquitto includes
 #include <mosquitto.h>
@@ -275,6 +276,14 @@ Cell MagolvesMqtt_MiddlewareService_isSlotRegistered(SedonaVM *vm,
 }
 Cell MagolvesMqtt_MiddlewareService_unregisterSlot(SedonaVM *vm, Cell *params) {
   return falseCell;
+}
+
+Cell MagolvesMqtt_MiddlewareService_getRegisteredSlots(SedonaVM *vm,
+                                                       Cell *params) {
+
+  Cell result;
+  result.ival = mqtt_map_size();
+  return result;
 }
 
 Cell MagolvesMqtt_MiddlewareService_enableComponentIf(SedonaVM *vm,

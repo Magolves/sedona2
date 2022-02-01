@@ -23,16 +23,18 @@
   <native qname="MagolvesMqtt::MiddlewareService.stopSession"     id="51::1"  />
   <native qname="MagolvesMqtt::MiddlewareService.isSessionLive"   id="51::2"  />
   <native qname="MagolvesMqtt::MiddlewareService.getStatus"   id="51::3"  />
+  
   <native qname="MagolvesMqtt::MiddlewareService.registerReadOnlySlot"   id="51::10"  />
   <native qname="MagolvesMqtt::MiddlewareService.registerWritableSlot"   id="51::11"  />
   <native qname="MagolvesMqtt::MiddlewareService.registerAction"   id="51::12"  />
-
   <native qname="MagolvesMqtt::MiddlewareService.isComponentRegistered"   id="51::13"  />
   <native qname="MagolvesMqtt::MiddlewareService.isSlotRegistered"   id="51::14"  />
-  <native qname="MagolvesMqtt::MiddlewareService.unregisterSlot"   id="51::15"  />
-  <native qname="MagolvesMqtt::MiddlewareService.enableComponentIf"   id="51::16"  />
-  <native qname="MagolvesMqtt::MiddlewareService.enableSlotIf"   id="51::17"  />
-  <native qname="MagolvesMqtt::MiddlewareService.isSlotEnabled"   id="51::18"  />
+  <native qname="MagolvesMqtt::MiddlewareService.getRegisteredSlots"   id="51::15"  />
+
+  <native qname="MagolvesMqtt::MiddlewareService.unregisterSlot"   id="51::16"  />
+  <native qname="MagolvesMqtt::MiddlewareService.enableComponentIf"   id="51::17"  />
+  <native qname="MagolvesMqtt::MiddlewareService.enableSlotIf"   id="51::18"  />
+  <native qname="MagolvesMqtt::MiddlewareService.isSlotEnabled"   id="51::19"  />
 
 
 </sedonaKit>
