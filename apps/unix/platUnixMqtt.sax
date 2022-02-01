@@ -57,7 +57,7 @@
       <prop name="osUtcOffset" val="true"/>
     </comp>
     <!-- /service/time -->
-    <comp name="mqtt" type="MagolvesMqtt::CbcMiddlewareService">
+    <comp name="mqtt" type="MagolvesMqtt::MiddlewareService">
       <prop name="host" val="localhost"/>
       <prop name="port" val="1883"/>
     </comp>

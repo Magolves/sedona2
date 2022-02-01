@@ -46,7 +46,7 @@
     <comp name="time" type="datetimeStd::DateTimeServiceStd">
       <prop name="osUtcOffset" val="true"/>
     </comp>
-    <comp name="mqtt" type="MagolvesMqtt::CbcMiddlewareService">
+    <comp name="mqtt" type="MagolvesMqtt::MiddlewareService">
 	    <prop name="host" val="localhost"/>
     </comp>
   </comp>
