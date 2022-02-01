@@ -30,7 +30,7 @@ class MqttComponent extends Component {
       isHeating := enabled && actualTemp <= setPoint
     else
       isHeating := enabled && actualTemp <= lowTemp 
-
+/*
     if (Sys.ticks() % 10000L == 0L)
     {
       if (isHeating)
@@ -38,9 +38,7 @@ class MqttComponent extends Component {
       else if (actualTemp > 10.0)
         actualTemp := actualTemp - 0.02
       //Sys.out.print("actualTemp changed to $actualTemp").nl()
-
-
-    }
+    }*/
    
   }
 

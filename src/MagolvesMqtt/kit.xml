@@ -29,7 +29,7 @@
   <native qname="MagolvesMqtt::MiddlewareService.registerAction"   id="51::12"  />
   <native qname="MagolvesMqtt::MiddlewareService.isComponentRegistered"   id="51::13"  />
   <native qname="MagolvesMqtt::MiddlewareService.isSlotRegistered"   id="51::14"  />
-  <native qname="MagolvesMqtt::MiddlewareService.getRegisteredSlots"   id="51::15"  />
+  <native qname="MagolvesMqtt::MiddlewareService.getRegisteredSlotCount"   id="51::15"  />
 
   <native qname="MagolvesMqtt::MiddlewareService.unregisterSlot"   id="51::16"  />
   <native qname="MagolvesMqtt::MiddlewareService.unregisterAllSlots"   id="51::17"  />

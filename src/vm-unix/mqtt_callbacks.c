@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+extern Cell sys_Component_doSetBool(SedonaVM *vm, Cell *params);
+
 void mqtt_log_callback(struct mosquitto *mosq, void *obj, int level,
                        const char *str) {
   UNUSED(mosq);
@@ -70,7 +72,7 @@ void mqtt_message_v5(struct mosquitto *mosq, void *obj,
                      const mosquitto_property *props) {
 
   UNUSED(mosq);
-  UNUSED(obj);
+  SedonaVM *vm = (SedonaVM *)obj;
 
   if (msg->payloadlen == 0) {
     return;
@@ -79,12 +81,22 @@ void mqtt_message_v5(struct mosquitto *mosq, void *obj,
   const struct mqtt_slot_entry *se = mqtt_find_path_entry(msg->topic);
 
   if (se != NULL) {
-    log_info("Found: %s (%d)", se->path, se->tid);
 
-    if (se->tid == BoolTypeId) {
-      setByte(se->self, se->slot,
-              ((char *)msg->payload)[0] == '1' ||
-                  ((char *)msg->payload)[0] == 't');
+    Cell args[3];
+    args[0].aval = se->self;
+    args[1].aval = se->slot;
+
+    if (se->tid == BoolTypeId && msg->payloadlen == 1) {
+      /*
+            setByte(se->self, se->slot,
+                    ((char *)msg->payload)[0] == '1' ||
+                        ((char *)msg->payload)[0] == 't');
+      */
+      args[2].ival =
+          ((char *)msg->payload)[0] == '1' || ((char *)msg->payload)[0] == 't';
+      log_info("Found: %s (%d) (l=%d) => %d", se->path, se->tid,
+               msg->payloadlen, args[2].ival);
+      sys_Component_doSetBool(vm, args);
     }
 
   } else {

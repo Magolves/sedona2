@@ -16,12 +16,15 @@ public class MiddlewareServiceTest extends Test
 
     MqttTestComponent c1 = (MqttTestComponent)a.add(s, "c1", MqttTestComponent.type)
 
-    assert(MiddlewareService.getRegisteredSlots(s.getHandle()) == 4)
-    assert(s.registeredSlots == 4)
+    assert(MiddlewareService.getRegisteredSlotCount(s.getHandle()) == 4)
+    assert(MiddlewareService.isComponentRegistered(s.getHandle(), c1) == true)
+    assert(MiddlewareService.isSlotRegistered(s.getHandle(), c1, MqttTestComponent.type.findSlot("enabled")) == true)
+    assert(MiddlewareService.isSlotRegistered(s.getHandle(), c1, MqttTestComponent.type.findSlot("hysteresis")) == false)
+    //assert(s.registeredSlots == 4)
 
     s.restartScan()
 
-    assert(MiddlewareService.getRegisteredSlots(s.getHandle()) == 0)
+    assert(MiddlewareService.getRegisteredSlotCount(s.getHandle()) == 0)
     assert(s.registeredSlots == 0)
 
     s.disconnect()

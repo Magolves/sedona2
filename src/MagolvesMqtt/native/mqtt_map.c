@@ -6,7 +6,7 @@
 static struct mqtt_slot_entry *entries = NULL;
 
 void mqtt_add_slot_entry(struct mosquitto *session, MQTT_SLOT_KEY_TYPE key,
-                         uint8_t *self, uint8_t sid, uint8_t tid,
+                         uint8_t *self, uint8_t *sid, uint8_t tid,
                          const char *path) {
 
   struct mqtt_slot_entry *s;
@@ -39,13 +39,26 @@ const struct mqtt_slot_entry *mqtt_find_path_entry(const char *path) {
   struct mqtt_slot_entry *entry, *tmp;
 
   HASH_ITER(hh, entries, entry, tmp) {
-    log_info("Check\n%s\n%s", path, entry->path);
+    // log_info("Check\n%s\n%s", path, entry->path);
     if (strcmp(path, entry->path) == 0) {
       return entry;
     }
   }
 
   return NULL;
+}
+
+int mqtt_count_component_slots(uint8_t *self) {
+  struct mqtt_slot_entry *entry, *tmp;
+
+  int result = 0;
+  HASH_ITER(hh, entries, entry, tmp) {
+    if (self == entry->self) {
+      ++result;
+    }
+  }
+
+  return result;
 }
 
 void mqtt_remove_all() {

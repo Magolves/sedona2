@@ -2,7 +2,7 @@ project (middleware-native)
 cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS On)
-
+set(CMAKE_BUILD_TYPE Debug)
 set(MQTT_SOURCES mqtt_client.c mqtt_callbacks.c mqtt_map.c log.c constants.c)
 set(MQTT_STUB_SOURCES local/main.c sedona/vmstub.c)
 set(VM_SOURCES 

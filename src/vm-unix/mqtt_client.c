@@ -30,12 +30,12 @@
 /// called when a component slot has changed.
 extern void sys_component_on_change(void (*set_callback)(SedonaVM *vm,
                                                          uint8_t *comp,
-                                                         void *slot));
+                                                         uint8_t *slot));
 extern Cell sys_Component_getFloat(SedonaVM *vm, Cell *params);
 
 static void mqtt_client_set_status(enum MqttConnectionState);
 
-static void changeListener(SedonaVM *vm, uint8_t *comp, void *slot);
+static void changeListener(SedonaVM *vm, uint8_t *comp, uint8_t *slot);
 
 static volatile int status = STATUS_CONNECTING;
 
@@ -57,7 +57,7 @@ void mqtt_client_set_status(enum MqttConnectionState new_status) {
 
 MQTT_SLOT_KEY_TYPE
 MagolvesMqtt_MiddlewareService_computeSlotKey(SedonaVM *vm, uint8_t *self,
-                                              void *slot);
+                                              uint8_t *slot);
 
 void renderPayload(char *buffer, size_t *len, uint8_t *self, uint16_t offset,
                    uint16_t tid);
@@ -94,7 +94,7 @@ Cell MagolvesMqtt_MiddlewareService_startSession(SedonaVM *vm, Cell *params) {
 
   mosquitto_lib_init();
 
-  mosq = mosquitto_new(MW_CLIENT_NAME, MW_CLEAN_SESSION, NULL);
+  mosq = mosquitto_new(MW_CLIENT_NAME, MW_CLEAN_SESSION, vm);
   if (!mosq) {
     mqtt_client_set_status(STATUS_INTERNAL_ERROR);
   } else {
@@ -227,7 +227,7 @@ Cell MagolvesMqtt_MiddlewareService_export(SedonaVM *vm, Cell *params,
                                            int flags) {
   struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
   uint8_t *self = params[1].aval;
-  void *slot = params[2].aval;
+  uint8_t *slot = params[2].aval;
   const char *path = params[3].aval;
   uint16_t typeId = getTypeId(vm, getSlotType(vm, slot));
   uint16_t offset = getSlotHandle(vm, slot);
@@ -245,11 +245,11 @@ Cell MagolvesMqtt_MiddlewareService_export(SedonaVM *vm, Cell *params,
       MagolvesMqtt_MiddlewareService_computeSlotKey(vm, self, slot);
 
   log_info("Register slot %p \n\t((k=0x%x), self=%p, qn=%s, n=%s, t=%d, off=%d "
-           "(0x%x), p=%s -> %s",
+           "(0x%x), p=%s -> %s, vm=%p",
            slot, (MQTT_SLOT_KEY_TYPE)key, self, typeName, getSlotName(vm, slot),
-           typeId, offset, offset, path, MQTT_PATH_BUFFER);
+           typeId, offset, offset, path, MQTT_PATH_BUFFER, vm);
 
-  mqtt_add_slot_entry(mosq, (MQTT_SLOT_KEY_TYPE)key, self, offset, typeId,
+  mqtt_add_slot_entry(mosq, (MQTT_SLOT_KEY_TYPE)key, self, slot, typeId,
                       MQTT_PATH_BUFFER);
 
   log_info("Added slot to map %p", slot);
@@ -267,26 +267,38 @@ Cell MagolvesMqtt_MiddlewareService_export(SedonaVM *vm, Cell *params,
 
 Cell MagolvesMqtt_MiddlewareService_isComponentRegistered(SedonaVM *vm,
                                                           Cell *params) {
-  return falseCell;
+
+  // struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
+  uint8_t *self = params[1].aval;
+
+  return (mqtt_count_component_slots(self) > 0) ? trueCell : falseCell;
 }
 
 Cell MagolvesMqtt_MiddlewareService_isSlotRegistered(SedonaVM *vm,
                                                      Cell *params) {
-  return falseCell;
+
+  struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
+  uint8_t *self = params[1].aval;
+  uint8_t *slot = params[2].aval;
+
+  MQTT_SLOT_KEY_TYPE key =
+      MagolvesMqtt_MiddlewareService_computeSlotKey(vm, self, slot);
+
+  return (mqtt_find_slot_entry(key) != NULL) ? trueCell : falseCell;
 }
+
 Cell MagolvesMqtt_MiddlewareService_unregisterSlot(SedonaVM *vm, Cell *params) {
   return falseCell;
 }
 
 Cell MagolvesMqtt_MiddlewareService_unregisterAllSlots(SedonaVM *vm,
                                                        Cell *params) {
-
   mqtt_remove_all();
   return zeroCell;
 }
 
-Cell MagolvesMqtt_MiddlewareService_getRegisteredSlots(SedonaVM *vm,
-                                                       Cell *params) {
+Cell MagolvesMqtt_MiddlewareService_getRegisteredSlotCount(SedonaVM *vm,
+                                                           Cell *params) {
 
   Cell result;
   result.ival = mqtt_map_size();
@@ -304,7 +316,7 @@ Cell MagolvesMqtt_MiddlewareService_isSlotEnabled(SedonaVM *vm, Cell *params) {
   return falseCell;
 }
 
-void changeListener(SedonaVM *vm, uint8_t *self, void *slot) {
+void changeListener(SedonaVM *vm, uint8_t *self, uint8_t *slot) {
   // log_info("Check slot to map s=%p (0x%x)", slot, (MQTT_SLOT_KEY_TYPE)slot);
 
   MQTT_SLOT_KEY_TYPE key =
@@ -318,7 +330,8 @@ void changeListener(SedonaVM *vm, uint8_t *self, void *slot) {
     args[0].aval = self;
     args[1].aval = slot;
 
-    renderPayloadAsJson(JSON_BUFFER, self, se->slot, se->tid);
+    renderPayloadAsJson(JSON_BUFFER, self, getSlotHandle(vm, se->slot),
+                        se->tid);
     /*
     log_info("Publish slot %s (%s, t=%d)\n", getSlotName(vm, slot), JSON_BUFFER,
              se->tid);*/
@@ -413,7 +426,8 @@ void renderPayloadAsJson(char *buffer, uint8_t *self, uint16_t offset,
 
 MQTT_SLOT_KEY_TYPE
 MagolvesMqtt_MiddlewareService_computeSlotKey(SedonaVM *vm, uint8_t *self,
-                                              void *slot) {
+                                              uint8_t *slot) {
   uint16_t offset = getSlotHandle(vm, slot);
-  return (self - vm->dataBaseAddr) + offset;
+  // return (self - vm->dataBaseAddr) + offset;
+  return (MQTT_SLOT_KEY_TYPE)(self + offset);
 }

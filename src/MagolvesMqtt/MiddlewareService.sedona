@@ -147,7 +147,7 @@ class MiddlewareService extends Service
         registerComponent(app.comps[curCompId++])
         componentsScanned := 100.0 * (float)curCompId / (float)app.compsLen        
     }
-    registeredSlots := getRegisteredSlots(handle)
+    registeredSlots := getRegisteredSlotCount(handle)
     log.message("Scanned $curCompId/$app.compsLen ($componentsScanned%, $registeredSlots slots)")
 
     return curCompId < app.compsLen
@@ -282,7 +282,7 @@ class MiddlewareService extends Service
   **
   ** Get the number of registered slots.
   **
-  static native int getRegisteredSlots(Obj handle)
+  static native int getRegisteredSlotCount(Obj handle)
 
   ////////////////////////////////////////////////////////////////
   // Fields

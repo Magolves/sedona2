@@ -16,7 +16,7 @@ struct mqtt_slot_entry {
   struct mosquitto *session;
   uint8_t tid;
   uint8_t *self;
-  uint8_t slot;
+  uint8_t *slot;
   const char path[MAX_PATH_LEN];
   UT_hash_handle hh; /* makes this structure hashable */
 };
@@ -30,7 +30,7 @@ struct mqtt_slot_entry {
 /// @param tid the slot type id
 /// @param path the MQTT topic
 void mqtt_add_slot_entry(struct mosquitto *session, MQTT_SLOT_KEY_TYPE key,
-                         uint8_t *self, uint8_t sid, uint8_t tid,
+                         uint8_t *self, uint8_t *sid, uint8_t tid,
                          const char *path);
 
 /// @brief Finds an entry matching the given key.
@@ -50,6 +50,12 @@ const struct mqtt_slot_entry *mqtt_find_path_entry(const char *path);
 /// @param path the key to match
 /// @return const struct mqtt_slot_entry* the matching map entry or NULL
 const struct mqtt_slot_entry *mqtt_find_slot_entry(MQTT_SLOT_KEY_TYPE key);
+
+/// @brief Count the registered slots for the given component.
+///
+/// @param self the component pointer
+/// @return int the number of slots registered for this component
+int mqtt_count_component_slots(uint8_t *self);
 
 /// @brief Remove all entries from the map.
 void mqtt_remove_all();

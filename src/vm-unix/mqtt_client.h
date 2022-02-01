@@ -33,8 +33,8 @@ Cell MagolvesMqtt_MiddlewareService_enableComponentIf(SedonaVM *vm,
 Cell MagolvesMqtt_MiddlewareService_enableSlotIf(SedonaVM *vm, Cell *params);
 Cell MagolvesMqtt_MiddlewareService_isSlotEnabled(SedonaVM *vm, Cell *params);
 
-Cell MagolvesMqtt_MiddlewareService_getRegisteredSlots(SedonaVM *vm,
-                                                       Cell *params);
+Cell MagolvesMqtt_MiddlewareService_getRegisteredSlotCount(SedonaVM *vm,
+                                                           Cell *params);
 
 // Internal methods (not exposed to Sedona)
 Cell MagolvesMqtt_MiddlewareService_registerSlot(SedonaVM *vm, Cell *params);
