@@ -1,5 +1,9 @@
 class MiddlewareService extends Service
 {
+  private static inline Buf(128) buf; // 16 component levels x 8 characters
+
+  private static inline BufOutStream(buf) outBuf;
+
   ////////////////////////////////////////////////////////////////
   // Properties
   ////////////////////////////////////////////////////////////////
@@ -10,7 +14,7 @@ class MiddlewareService extends Service
   @config @asStr property Buf(16) username
   @config @asStr property Buf(16) password
   
-  @config property bool autoStart = false
+  @config property bool autoStart = true
 
   define int Connecting = 0
   define int Handshake = 1
@@ -98,6 +102,27 @@ class MiddlewareService extends Service
       return null
   }
 
+  ** Get the MQTT topic from the component path
+  static Str getTopicFromPath(Component targetComponent)
+  {
+
+    buf.clear();
+
+    foreach (Component comp: targetComponent.path(), 16)
+    {
+      if (comp == null)
+      {
+        outBuf.printChar('\0'); // Terminate String
+        break;
+      }
+
+      if (buf.size > 0)
+        outBuf.print("/")
+      outBuf.print(comp.name);
+    }
+
+    return buf.toStr();
+  }
   
   // natives 
   **

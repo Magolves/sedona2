@@ -14,6 +14,8 @@ public class MiddlewareServiceTest extends Test
     s.connect()
     assert(s.status == MiddlewareService.Connected)
 
+    MqttTestComponent c1 = (MqttTestComponent)a.add(s, "c1", MqttTestComponent.type)
+
     s.disconnect()
     assert(s.status == MiddlewareService.Disconnected)
   }

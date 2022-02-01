@@ -256,7 +256,7 @@ Cell MagolvesMqtt_MiddlewareService_export(SedonaVM *vm, Cell *params,
   if ((flags & EXPORT_WRITABLE) > 0) {
     renderPayloadAsJson(JSON_BUFFER, self, offset, typeId);
     mosquitto_publish(mosq, NULL, MQTT_PATH_BUFFER, strlen(JSON_BUFFER),
-                      JSON_BUFFER, 0, false);
+                      JSON_BUFFER, 0, true);
 
     mosquitto_subscribe_v5(mosq, NULL, MQTT_PATH_BUFFER, 0 /*qos*/,
                            0 /* options*/, NULL);
