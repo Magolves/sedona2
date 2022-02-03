@@ -18,9 +18,16 @@ public class MiddlewareServiceTest extends Test
 
     assert(MiddlewareService.getRegisteredSlotCount(s.getHandle()) == 4)
     assert(MiddlewareService.isComponentRegistered(s.getHandle(), c1) == true)
+    // NULL value
+    assert(MiddlewareService.isComponentRegistered(s.getHandle(), null) == false)
+
     assert(MiddlewareService.isSlotRegistered(s.getHandle(), c1, MqttTestComponent.type.findSlot("enabled")) == true)
+    // Unknown slot -> false
     assert(MiddlewareService.isSlotRegistered(s.getHandle(), c1, MqttTestComponent.type.findSlot("hysteresis")) == false)
-    //assert(s.registeredSlots == 4)
+    // Unregistered slot -> false
+    assert(MiddlewareService.isSlotRegistered(s.getHandle(), c1, MqttTestComponent.type.findSlot("hysteresis")) == false)
+    // NULL value
+    assert(MiddlewareService.isSlotRegistered(s.getHandle(), null, MqttTestComponent.type.findSlot("enabled")) == false)
 
     s.restartScan()
 
