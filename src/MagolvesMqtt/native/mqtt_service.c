@@ -1,9 +1,11 @@
 // Out includs
 #include "mqtt_service.h"
+
 #include "constants.h"
 #include "log.h"
 #include "mqtt_callbacks.h"
 #include "mqtt_map.h"
+#include "mqtt_payload.h"
 #include "sedona.h"
 
 // Mosquitto includes
@@ -58,11 +60,6 @@ void mqtt_service_set_status(enum MqttConnectionState new_status) {
 MQTT_SLOT_KEY_TYPE
 MagolvesMqtt_MiddlewareService_computeSlotKey(SedonaVM *vm, uint8_t *self,
                                               uint8_t *slot);
-
-void renderPayload(char *buffer, size_t *len, uint8_t *self, uint16_t offset,
-                   uint16_t tid);
-void renderPayloadAsJson(char *buffer, uint8_t *self, uint16_t offset,
-                         uint16_t tid);
 
 Cell MagolvesMqtt_MiddlewareService_export(SedonaVM *vm, Cell *params,
                                            int flags);
@@ -290,7 +287,7 @@ Cell MagolvesMqtt_MiddlewareService_export(SedonaVM *vm, Cell *params,
   mqtt_add_slot_entry(mosq, (MQTT_SLOT_KEY_TYPE)key, self, slot, typeId,
                       MQTT_PATH_BUFFER);
 
-  renderPayloadAsJson(JSON_BUFFER, self, offset, typeId);
+  render_payload_json(JSON_BUFFER, MAX_JSON_LENGTH, self, offset, typeId);
   mosquitto_publish(mosq, NULL, MQTT_PATH_BUFFER, strlen(JSON_BUFFER),
                     JSON_BUFFER, 0, retain);
 
@@ -381,97 +378,13 @@ void changeListener(SedonaVM *vm, uint8_t *self, uint8_t *slot) {
     args[0].aval = self;
     args[1].aval = slot;
 
-    renderPayloadAsJson(JSON_BUFFER, self, getSlotHandle(vm, se->slot),
-                        se->tid);
+    render_payload_json(JSON_BUFFER, MAX_JSON_LENGTH, self,
+                        getSlotHandle(vm, se->slot), se->tid);
     /*
     log_info("Publish slot %s (%s, t=%d)\n", getSlotName(vm, slot), JSON_BUFFER,
              se->tid);*/
     mosquitto_publish(se->session, NULL, (const char *)se->path,
                       strlen(JSON_BUFFER), JSON_BUFFER, 0, false);
-  }
-}
-
-void renderPayload(char *buffer, size_t *len, uint8_t *self, uint16_t offset,
-                   uint16_t tid) {
-
-  switch (tid) {
-  case BoolTypeId:
-  case ByteTypeId:
-    *len = sizeof(uint8_t);
-    uint8_t b = getByte(self, offset);
-    memcpy(buffer, &b, *len);
-    break;
-  case ShortTypeId:
-    *len = sizeof(uint16_t);
-    uint16_t s = getShort(self, offset);
-    memcpy(buffer, &s, *len);
-    break;
-  case IntTypeId:
-  case FloatTypeId:
-    *len = sizeof(int32_t);
-    int32_t f = getInt(self, offset);
-    memcpy(buffer, &f, *len);
-    break;
-  case DoubleTypeId:
-    *len = sizeof(int64_t);
-    int64_t l = getWide(self, offset);
-    memcpy(buffer, &l, *len);
-    break;
-  default:
-    log_warn("Invalid tid %d", tid);
-    *len = 0;
-    break;
-  }
-}
-
-void renderPayloadAsJson(char *buffer, uint8_t *self, uint16_t offset,
-                         uint16_t tid) {
-
-  switch (tid) {
-  case BoolTypeId:
-    // this line is required via C99 std; otherwise we get a compile error
-    // since every label mustfollowed by a statement and a
-    // decl is NOT a statement (sigh)
-    // We do not repeat ourselves, this is just language quirk
-    buffer[0] = 0;
-    uint8_t bl = getByte(self, offset);
-    snprintf(buffer, MAX_JSON_LENGTH, "{\"V\": %s}",
-             (bl > 0 ? "true" : "false"));
-    break;
-  case ByteTypeId:
-    buffer[0] = 0;
-    uint8_t b = getByte(self, offset);
-    snprintf(buffer, MAX_JSON_LENGTH, "{\"V\": %d}", b);
-    break;
-  case ShortTypeId:
-    buffer[0] = 0;
-    uint16_t s = getShort(self, offset);
-    snprintf(buffer, MAX_JSON_LENGTH, "{\"V\": %d}", s);
-    break;
-  case IntTypeId:
-    buffer[0] = 0;
-    int32_t i = getInt(self, offset);
-    snprintf(buffer, MAX_JSON_LENGTH, "{\"V\": %d}", i);
-    break;
-  case FloatTypeId:
-    buffer[0] = 0;
-    float f = getFloat(self, offset);
-    snprintf(buffer, MAX_JSON_LENGTH, "{\"V\": %.1f}", f);
-    break;
-  case DoubleTypeId:
-    buffer[0] = 0;
-    double d = (double)getWide(self, offset);
-    snprintf(buffer, MAX_JSON_LENGTH, "{\"V\": %.1f}", d);
-    break;
-  case BufTypeId:
-    buffer[0] = 0;
-    const char *str = getInline(self, offset);
-    sprintf(buffer, "{\"V\": \"%s\"}", str);
-    break;
-  default:
-    buffer[0] = 0;
-    sprintf(buffer, "{\"V\": \"(Invalid type id %d)\"}", tid);
-    break;
   }
 }
 
