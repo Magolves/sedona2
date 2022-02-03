@@ -1,37 +1,26 @@
 #include "mqtt_payload.h"
 #include "constants.h"
 #include "log.h"
+#include "sedona.h"
 
-void render_payload_raw(char *buffer, size_t *len, uint8_t *self,
-                        uint16_t offset, uint16_t tid) {
+size_t render_get_length(uint8_t *self, uint16_t offset, uint16_t tid) {
 
   switch (tid) {
   case BoolTypeId:
   case ByteTypeId:
-    *len = sizeof(uint8_t);
-    uint8_t b = getByte(self, offset);
-    memcpy(buffer, &b, *len);
-    break;
+    return sizeof(uint8_t);
   case ShortTypeId:
-    *len = sizeof(uint16_t);
-    uint16_t s = getShort(self, offset);
-    memcpy(buffer, &s, *len);
-    break;
+    return sizeof(uint16_t);
   case IntTypeId:
   case FloatTypeId:
-    *len = sizeof(int32_t);
-    int32_t f = getInt(self, offset);
-    memcpy(buffer, &f, *len);
-    break;
+    return sizeof(int32_t);
   case DoubleTypeId:
-    *len = sizeof(int64_t);
-    int64_t l = getWide(self, offset);
-    memcpy(buffer, &l, *len);
-    break;
+  case LongTypeId:
+    return sizeof(int64_t);
   default:
-    log_warn("Invalid tid %d", tid);
-    *len = 0;
-    break;
+    // how to determine length of buffer?
+    // const char *str = getInline(self, offset);
+    return 0;
   }
 }
 
@@ -76,7 +65,7 @@ void render_payload_json(char *buffer, size_t max_buf_len, uint8_t *self,
   case BufTypeId:
     buffer[0] = 0;
     const char *str = getInline(self, offset);
-    sprintf(buffer, "{\"V\": \"%s\"}", str);
+    snprintf(buffer, max_buf_len, "{\"V\": \"%s\"}", str);
     break;
   default:
     buffer[0] = 0;
