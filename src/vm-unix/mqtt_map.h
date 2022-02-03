@@ -4,6 +4,7 @@
 
 #include "uthash.h"
 #include <mosquitto.h>
+#include <stdint.h>
 
 #define MAX_PATH_LEN 256
 
@@ -18,6 +19,10 @@ struct mqtt_slot_entry {
   uint8_t *self;
   uint8_t *slot;
   const char path[MAX_PATH_LEN];
+  uint8_t action : 1;
+  uint8_t changed : 1;
+  uint8_t unused : 6;
+
   UT_hash_handle hh; /* makes this structure hashable */
 };
 
@@ -32,6 +37,18 @@ struct mqtt_slot_entry {
 void mqtt_add_slot_entry(struct mosquitto *session, MQTT_SLOT_KEY_TYPE key,
                          uint8_t *self, uint8_t *sid, uint8_t tid,
                          const char *path);
+
+/// @brief Add an action slot (entry) to the internal hash map.
+///
+/// @param session the MQTT session pointer
+/// @param key the action slot handle/pointer
+/// @param self the self pointer (component)
+/// @param sid the slot id
+/// @param tid the action parameter type id (0 = void)
+/// @param path the MQTT topic
+void mqtt_add_action_entry(struct mosquitto *session, MQTT_SLOT_KEY_TYPE key,
+                           uint8_t *self, uint8_t *sid, uint8_t tid,
+                           const char *path);
 
 /// @brief Finds an entry matching the given key.
 ///

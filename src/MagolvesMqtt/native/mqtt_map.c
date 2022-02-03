@@ -14,6 +14,7 @@ void mqtt_add_slot_entry(struct mosquitto *session, MQTT_SLOT_KEY_TYPE key,
   HASH_FIND_INT(entries, &key, s); /* slot already in the hash? */
   if (s == NULL) {
     s = (struct mqtt_slot_entry *)malloc(sizeof(struct mqtt_slot_entry));
+    memset(s, 0, sizeof(struct mqtt_slot_entry));
     s->session = session;
     s->key = key;
     s->slot = sid;
@@ -21,6 +22,31 @@ void mqtt_add_slot_entry(struct mosquitto *session, MQTT_SLOT_KEY_TYPE key,
     s->tid = tid;
 
     log_info("Added slot entry %s (%d)", path, strlen(path));
+    // s->path = malloc((strlen(path) + 1) * sizeof(char));
+    strncpy((char *)s->path, (const char *)path, MAX_PATH_LEN);
+
+    HASH_ADD_INT(entries, key, s); /* slot: name of key field */
+  }
+}
+
+void mqtt_add_action_entry(struct mosquitto *session, MQTT_SLOT_KEY_TYPE key,
+                           uint8_t *self, uint8_t *sid, uint8_t tid,
+                           const char *path) {
+
+  struct mqtt_slot_entry *s;
+
+  HASH_FIND_INT(entries, &key, s); /* slot already in the hash? */
+  if (s == NULL) {
+    s = (struct mqtt_slot_entry *)malloc(sizeof(struct mqtt_slot_entry));
+    memset(s, 0, sizeof(struct mqtt_slot_entry));
+    s->session = session;
+    s->action = 1;
+    s->key = key;
+    s->slot = sid;
+    s->self = self;
+    s->tid = tid;
+
+    log_info("Added action entry %s (%d)", path, strlen(path));
     // s->path = malloc((strlen(path) + 1) * sizeof(char));
     strncpy((char *)s->path, (const char *)path, MAX_PATH_LEN);
 

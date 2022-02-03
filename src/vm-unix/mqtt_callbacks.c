@@ -2,13 +2,12 @@
 #include "log.h"
 #include "mqtt_map.h"
 #include "sedona.h"
+#include "sys_Component.h"
 
 #include <mqtt_protocol.h>
 
 #include <stdio.h>
 #include <stdlib.h>
-
-extern Cell sys_Component_doSetBool(SedonaVM *vm, Cell *params);
 
 void mqtt_log_callback(struct mosquitto *mosq, void *obj, int level,
                        const char *str) {
@@ -74,7 +73,7 @@ void mqtt_message_v5(struct mosquitto *mosq, void *obj,
   UNUSED(mosq);
   SedonaVM *vm = (SedonaVM *)obj;
 
-  if (msg->payloadlen == 0) {
+  if (msg->retain) {
     return;
   }
 
@@ -86,19 +85,37 @@ void mqtt_message_v5(struct mosquitto *mosq, void *obj,
     args[0].aval = se->self;
     args[1].aval = se->slot;
 
-    if (se->tid == BoolTypeId && msg->payloadlen == 1) {
-      // NOTE: We have to use sys_Component_... here in order to get informed
-      // on value changes. Uset the set functions in sedona.h would
-      // bypass the change handler
-      args[2].ival =
-          ((char *)msg->payload)[0] == '1' || ((char *)msg->payload)[0] == 't';
-      log_info("Found: %s (%d) (l=%d) => %d", se->path, se->tid,
-               msg->payloadlen, args[2].ival);
-      sys_Component_doSetBool(vm, args);
-    }
+    // NOTE: We have to use sys_Component_... here in order to get informed
+    // on value changes. Uset the set functions in sedona.h would
+    // bypass the change handler
 
+    log_info("Found: %s (%d) (l=%d) => %d", se->path, se->tid, msg->payloadlen,
+             args[2].ival);
+
+    if (se->action) {
+      switch (se->tid) {
+      case VoidTypeId:
+        log_warn("Call void: %s", msg->topic);
+        sys_Component_invokeVoid(vm, args);
+        break;
+      default:
+        log_warn("Call: Invalid or unsupported tid: %d", se->tid);
+      }
+    } else {
+      switch (se->tid) {
+      case BoolTypeId:
+        if (msg->payloadlen == 1) {
+          args[2].ival = ((char *)msg->payload)[0] == '1' ||
+                         ((char *)msg->payload)[0] == 't';
+          sys_Component_doSetBool(vm, args);
+        }
+        break;
+      default:
+        log_warn("Set: Invalid or unsupported tid: %d", se->tid);
+      }
+    }
   } else {
-    log_info("Ignored: %s", msg->topic);
+    log_warn("Ignored: %s", msg->payload);
   }
 }
 

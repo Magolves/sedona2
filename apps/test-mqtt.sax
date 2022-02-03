@@ -55,16 +55,13 @@
   <comp name="mqtt" id="10" type="sys::Folder">
     <!-- /play/rampA -->
     <comp name="hc1" type="MagolvesMqttKit::MqttComponent">
-      <prop name="actual" val="20.00000"/>
-      <prop name="setPoint" val="25.00000"/>      
+      <prop name="setPointDay" val="25.00000"/>      
     </comp>    
     <comp name="hc2" type="MagolvesMqttKit::MqttComponent">
-      <prop name="actual" val="30.00000"/>
-      <prop name="setPoint" val="45.00000"/>      
+      <prop name="setPointDay" val="45.00000"/>      
     </comp>    
     <comp name="hc3" type="MagolvesMqttKit::MqttComponent">
-      <prop name="actual" val="11.00000"/>
-      <prop name="setPoint" val="15.00000"/>      
+      <prop name="mode" val="0"/>      
       <prop name="enabled" val="false"/>
     </comp>    
   </comp>

@@ -1,12 +1,12 @@
 // Out includs
 #include "mqtt_service.h"
-
 #include "constants.h"
 #include "log.h"
 #include "mqtt_callbacks.h"
 #include "mqtt_map.h"
 #include "mqtt_payload.h"
 #include "sedona.h"
+#include "sys_Component.h"
 
 // Mosquitto includes
 #include <mosquitto.h>
@@ -26,18 +26,9 @@
 #define snprintf sprintf_s
 #endif
 
-/// @brief External definition of component callbacks
-///
-/// @param set_callback The function pointer to the callback function which is
-/// called when a component slot has changed.
-extern void sys_component_on_change(void (*set_callback)(SedonaVM *vm,
-                                                         uint8_t *comp,
-                                                         uint8_t *slot));
-extern Cell sys_Component_getFloat(SedonaVM *vm, Cell *params);
-
 static void mqtt_service_set_status(enum MqttConnectionState);
 
-static void changeListener(SedonaVM *vm, uint8_t *comp, uint8_t *slot);
+static void changeListener(SedonaVM *vm, uint8_t *comp, void *slot);
 
 static volatile int status = STATUS_CONNECTING;
 
@@ -268,8 +259,10 @@ Cell MagolvesMqtt_MiddlewareService_export(SedonaVM *vm, Cell *params,
   bool subscribe = (flags & EXPORT_WRITABLE) > 0;
   // Set 'retain' flag, if parameter
   bool retain = (flags & EXPORT_PARAMETER) > 0;
+  bool isAction = (flags & EXPORT_ACTION) > 0;
+  int qos = isAction ? 2 : 1;
 
-  // Assemble path
+  // Assemble path (append slot name to topic)
   MQTT_PATH_BUFFER[0] = 0;
   strncpy(MQTT_PATH_BUFFER, path, MAX_PATH_LENGTH);
   strncat(MQTT_PATH_BUFFER, "/", MAX_PATH_LENGTH);
@@ -284,16 +277,20 @@ Cell MagolvesMqtt_MiddlewareService_export(SedonaVM *vm, Cell *params,
            slot, (MQTT_SLOT_KEY_TYPE)key, self, typeName, getSlotName(vm, slot),
            typeId, offset, offset, path, MQTT_PATH_BUFFER, vm);
 
-  mqtt_add_slot_entry(mosq, (MQTT_SLOT_KEY_TYPE)key, self, slot, typeId,
-                      MQTT_PATH_BUFFER);
-
-  render_payload_json(JSON_BUFFER, MAX_JSON_LENGTH, self, offset, typeId);
-  mosquitto_publish(mosq, NULL, MQTT_PATH_BUFFER, strlen(JSON_BUFFER),
-                    JSON_BUFFER, 0, retain);
+  if (isAction) {
+    mqtt_add_action_entry(mosq, (MQTT_SLOT_KEY_TYPE)key, self, slot, typeId,
+                          MQTT_PATH_BUFFER);
+  } else {
+    mqtt_add_slot_entry(mosq, (MQTT_SLOT_KEY_TYPE)key, self, slot, typeId,
+                        MQTT_PATH_BUFFER);
+    render_payload_json(JSON_BUFFER, MAX_JSON_LENGTH, self, offset, typeId);
+    mosquitto_publish(mosq, NULL, MQTT_PATH_BUFFER, strlen(JSON_BUFFER),
+                      JSON_BUFFER, 0, retain);
+  }
 
   if (subscribe) {
-    mosquitto_subscribe_v5(mosq, NULL, MQTT_PATH_BUFFER, 0 /*qos*/,
-                           0 /* options*/, NULL);
+    mosquitto_subscribe_v5(mosq, NULL, MQTT_PATH_BUFFER, qos, 0 /* options*/,
+                           NULL);
   }
   return trueCell;
 }
@@ -364,11 +361,11 @@ Cell MagolvesMqtt_MiddlewareService_isSlotEnabled(SedonaVM *vm, Cell *params) {
   return falseCell;
 }
 
-void changeListener(SedonaVM *vm, uint8_t *self, uint8_t *slot) {
+void changeListener(SedonaVM *vm, uint8_t *self, void *slot) {
   // log_info("Check slot to map s=%p (0x%x)", slot, (MQTT_SLOT_KEY_TYPE)slot);
 
   MQTT_SLOT_KEY_TYPE key =
-      MagolvesMqtt_MiddlewareService_computeSlotKey(vm, self, slot);
+      MagolvesMqtt_MiddlewareService_computeSlotKey(vm, self, (uint8_t *)slot);
 
   const struct mqtt_slot_entry *se =
       mqtt_find_slot_entry((MQTT_SLOT_KEY_TYPE)key);

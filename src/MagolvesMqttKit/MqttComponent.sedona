@@ -59,7 +59,7 @@ class MqttComponent extends Component {
       isHeating := enabled && actualTemp <= setPoint
     else
       isHeating := enabled && actualTemp <= lowTemp 
-
+/*
     if (Sys.ticks() % 10000L == 0L)
     {
       if (isHeating)
@@ -67,7 +67,7 @@ class MqttComponent extends Component {
       else if (actualTemp > 10.0)
         actualTemp := actualTemp - 0.02
       //Sys.out.print("actualTemp changed to $actualTemp").nl()
-    }
+    }*/
    
   }
 
@@ -135,7 +135,12 @@ class MqttComponent extends Component {
         MiddlewareService.registerReadOnlySlot(h, this, type.findSlot("setPoint"), path)
         MiddlewareService.registerWritableSlot(h, this, type.findSlot("enabled"), path)      
         MiddlewareService.registerReadOnlySlot(h, this, type.findSlot("isHeating"), path) 
-        registered = true
+        MiddlewareService.registerReadOnlySlot(h, this, type.findSlot("mode"), path) 
+        MiddlewareService.registerAction(h, this, type.findSlot("off"), path) 
+        MiddlewareService.registerAction(h, this, type.findSlot("frost"), path) 
+        MiddlewareService.registerAction(h, this, type.findSlot("night"), path) 
+        MiddlewareService.registerAction(h, this, type.findSlot("day"), path) 
+        
       } else {
         App.log.error("Session not active")
       }
