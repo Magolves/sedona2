@@ -1,5 +1,5 @@
 // Out includs
-#include "mqtt_client.h"
+#include "mqtt_service.h"
 #include "constants.h"
 #include "log.h"
 #include "mqtt_callbacks.h"
@@ -33,7 +33,7 @@ extern void sys_component_on_change(void (*set_callback)(SedonaVM *vm,
                                                          uint8_t *slot));
 extern Cell sys_Component_getFloat(SedonaVM *vm, Cell *params);
 
-static void mqtt_client_set_status(enum MqttConnectionState);
+static void mqtt_service_set_status(enum MqttConnectionState);
 
 static void changeListener(SedonaVM *vm, uint8_t *comp, uint8_t *slot);
 
@@ -51,7 +51,7 @@ static char JSON_BUFFER[MAX_JSON_LENGTH + 1];
 // Internal functions
 ///////////////////////////////////////////////////////
 
-void mqtt_client_set_status(enum MqttConnectionState new_status) {
+void mqtt_service_set_status(enum MqttConnectionState new_status) {
   status = new_status;
 }
 
@@ -100,7 +100,7 @@ Cell MagolvesMqtt_MiddlewareService_startSession(SedonaVM *vm, Cell *params) {
   log_info("startSession (%p), vm=%p", mosq, vm);
   if (!mosq) {
     log_error("Internal error (memory allocation failed)");
-    mqtt_client_set_status(STATUS_INTERNAL_ERROR);
+    mqtt_service_set_status(STATUS_INTERNAL_ERROR);
   } else {
     // Set MQTT protocol version to 5
     mosquitto_int_option(mosq, MOSQ_OPT_PROTOCOL_VERSION, MQTT_PROTOCOL_V5);
@@ -124,10 +124,10 @@ Cell MagolvesMqtt_MiddlewareService_startSession(SedonaVM *vm, Cell *params) {
       } else {
         log_error("mosquitto_loop_start: Illegal call (rc = %d)\n", rc);
       }
-      mqtt_client_set_status(STATUS_DOWN);
+      mqtt_service_set_status(STATUS_DOWN);
     } else {
       log_info("MQTT loop started");
-      mqtt_client_set_status(STATUS_CONNECTING);
+      mqtt_service_set_status(STATUS_CONNECTING);
       rc = mosquitto_connect_async(mosq, host, port, 60);
 
       if (rc != MOSQ_ERR_SUCCESS) {
@@ -137,9 +137,9 @@ Cell MagolvesMqtt_MiddlewareService_startSession(SedonaVM *vm, Cell *params) {
         } else {
           log_error("mosquitto_connect_async: Illegal call (rc = %d)\n", rc);
         }
-        mqtt_client_set_status(STATUS_DOWN);
+        mqtt_service_set_status(STATUS_DOWN);
       } else {
-        mqtt_client_set_status(STATUS_CONNECTED);
+        mqtt_service_set_status(STATUS_CONNECTED);
         // Install component change listener
         sys_component_on_change(changeListener);
       }
@@ -167,7 +167,7 @@ Cell MagolvesMqtt_MiddlewareService_stopSession(SedonaVM *vm, Cell *params) {
   // Remove component change listener
   sys_component_on_change(NULL);
 
-  mqtt_client_set_status(STATUS_DISCONNECTING);
+  mqtt_service_set_status(STATUS_DISCONNECTING);
   mosquitto_disconnect_v5(mosq, MQTT_RC_DISCONNECT_WITH_WILL_MSG, NULL);
 
   // stop thread (must be done *after* disconnect)
@@ -180,7 +180,7 @@ Cell MagolvesMqtt_MiddlewareService_stopSession(SedonaVM *vm, Cell *params) {
       log_error("mosquitto_loop_stop: Illegal call (rc = %d)\n", rc);
     }
   }
-  mqtt_client_set_status(STATUS_DISCONNECTED);
+  mqtt_service_set_status(STATUS_DISCONNECTED);
 
   return trueCell;
 }
@@ -307,6 +307,11 @@ Cell MagolvesMqtt_MiddlewareService_isComponentRegistered(SedonaVM *vm,
   // struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
   uint8_t *self = params[1].aval;
 
+  if (self == NULL) {
+    log_warn("Self pointer is zero - invalid component?");
+    return falseCell;
+  }
+
   return (mqtt_count_component_slots(self) > 0) ? trueCell : falseCell;
 }
 
@@ -316,6 +321,16 @@ Cell MagolvesMqtt_MiddlewareService_isSlotRegistered(SedonaVM *vm,
   struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
   uint8_t *self = params[1].aval;
   uint8_t *slot = params[2].aval;
+
+  if (self == NULL) {
+    log_warn("Self pointer is zero - invalid component?");
+    return falseCell;
+  }
+
+  if (slot == NULL) {
+    log_warn("Slot pointer is zero - invalid slot?");
+    return falseCell;
+  }
 
   MQTT_SLOT_KEY_TYPE key =
       MagolvesMqtt_MiddlewareService_computeSlotKey(vm, self, slot);

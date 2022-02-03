@@ -1,4 +1,4 @@
-#include "mqtt_client.h"
+#include "mqtt_service.h"
 #include "sedona.h"
 
 #include <stdio.h>
