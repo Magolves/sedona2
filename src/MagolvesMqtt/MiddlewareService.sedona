@@ -76,11 +76,14 @@ class MiddlewareService extends Service
       return
 
     handle = startSession(host.toStr(), port, clientid.toStr(), username.toStr(), password.toStr())
-    if (handle != null) {
+    if (isSessionLive(handle) == true) 
+    {
       log.message("Connected")
       sessionStartTime = Sys.ticks()
-    } else {      
-      log.error("Connection")
+    } 
+    else 
+    {
+      log.error("Connection failed")
     }
     status := getStatus()
   }
@@ -90,7 +93,7 @@ class MiddlewareService extends Service
   ** 
   action void restartScan()
   {
-    if (handle != null) {
+    if (isSessionLive(handle) == true) {
       curCompId = 0
       registeredSlots := 0
       unregisterAllSlots(handle)
@@ -102,11 +105,12 @@ class MiddlewareService extends Service
   ** 
   action void disconnect()
   {
-    if (handle == null || status == Disconnected)
+    if (isSessionLive(handle) == false)
       return
 
     status := GoodBye
-    stopSession(handle);
+    stopSession(handle)
+    handle = null
     status := getStatus()
   }
 
@@ -135,8 +139,10 @@ class MiddlewareService extends Service
     if(!Sys.app.isSteadyState())
       return false
 
-    if (handle == null)
+    if (isSessionLive(handle) == false)
       return false
+
+    registeredSlots := getRegisteredSlotCount(handle)
 
     App app = Sys.app
     if (curCompId >= app.compsLen)
@@ -148,7 +154,7 @@ class MiddlewareService extends Service
         componentsScanned := 100.0 * (float)curCompId / (float)app.compsLen        
     }
     registeredSlots := getRegisteredSlotCount(handle)
-    log.message("Scanned $curCompId/$app.compsLen ($componentsScanned%, $registeredSlots slots)")
+    //log.message("Scanned $curCompId/$app.compsLen ($componentsScanned%, $registeredSlots slots)")
 
     return curCompId < app.compsLen
   }
@@ -171,12 +177,12 @@ class MiddlewareService extends Service
       return
 
     Type t = c.type
-    log.message("Check $c.name [$c.type.name]...")
+    //log.message("Check $c.name [$c.type.name]...")
 
     Slot regAction = t.findSlot("regMqtt")
     if (regAction != null) {
-      log.message("Register $c.name ...")
-      invokeVoid(regAction)
+      log.message("Register $c.name/$regAction.name ...")
+      c.invokeVoid(regAction)      
     }
   }
 

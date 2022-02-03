@@ -87,11 +87,9 @@ void mqtt_message_v5(struct mosquitto *mosq, void *obj,
     args[1].aval = se->slot;
 
     if (se->tid == BoolTypeId && msg->payloadlen == 1) {
-      /*
-            setByte(se->self, se->slot,
-                    ((char *)msg->payload)[0] == '1' ||
-                        ((char *)msg->payload)[0] == 't');
-      */
+      // NOTE: We have to use sys_Component_... here in order to get informed
+      // on value changes. Uset the set functions in sedona.h would
+      // bypass the change handler
       args[2].ival =
           ((char *)msg->payload)[0] == '1' || ((char *)msg->payload)[0] == 't';
       log_info("Found: %s (%d) (l=%d) => %d", se->path, se->tid,

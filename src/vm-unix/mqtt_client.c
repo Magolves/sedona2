@@ -94,8 +94,12 @@ Cell MagolvesMqtt_MiddlewareService_startSession(SedonaVM *vm, Cell *params) {
 
   mosquitto_lib_init();
 
+  // NOTE: We need to pass the vm pointer as uuser object to mosquitto, since it
+  // is required later on (set values or invoke methods)
   mosq = mosquitto_new(MW_CLIENT_NAME, MW_CLEAN_SESSION, vm);
+  log_info("startSession (%p), vm=%p", mosq, vm);
   if (!mosq) {
+    log_error("Internal error (memory allocation failed)");
     mqtt_client_set_status(STATUS_INTERNAL_ERROR);
   } else {
     // Set MQTT protocol version to 5
@@ -115,22 +119,23 @@ Cell MagolvesMqtt_MiddlewareService_startSession(SedonaVM *vm, Cell *params) {
 
     if (rc != MOSQ_ERR_SUCCESS) {
       if (rc == MOSQ_ERR_INVAL) {
-        printf("mosquitto_loop_start: Invalid parameters %s (%d)\n", host,
-               port);
+        log_error("mosquitto_loop_start: Invalid parameters %s (%d)\n", host,
+                  port);
       } else {
-        printf("mosquitto_loop_start: Illegal call (rc = %d)\n", rc);
+        log_error("mosquitto_loop_start: Illegal call (rc = %d)\n", rc);
       }
       mqtt_client_set_status(STATUS_DOWN);
     } else {
+      log_info("MQTT loop started");
       mqtt_client_set_status(STATUS_CONNECTING);
       rc = mosquitto_connect_async(mosq, host, port, 60);
 
       if (rc != MOSQ_ERR_SUCCESS) {
         if (rc == MOSQ_ERR_INVAL) {
-          printf("mosquitto_connect_async: Invalid parameters %s (%d)\n", host,
-                 port);
+          log_error("mosquitto_connect_async: Invalid parameters %s (%d)\n",
+                    host, port);
         } else {
-          printf("mosquitto_connect_async: Illegal call (rc = %d)\n", rc);
+          log_error("mosquitto_connect_async: Illegal call (rc = %d)\n", rc);
         }
         mqtt_client_set_status(STATUS_DOWN);
       } else {
@@ -153,14 +158,28 @@ Cell MagolvesMqtt_MiddlewareService_startSession(SedonaVM *vm, Cell *params) {
 /// @return Cell trueCell, if successful
 Cell MagolvesMqtt_MiddlewareService_stopSession(SedonaVM *vm, Cell *params) {
   struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
-  if (!mosq)
+
+  log_info("stopSession (%p)", mosq);
+  if (!mosq) {
     return falseCell;
+  }
 
   // Remove component change listener
   sys_component_on_change(NULL);
 
   mqtt_client_set_status(STATUS_DISCONNECTING);
   mosquitto_disconnect_v5(mosq, MQTT_RC_DISCONNECT_WITH_WILL_MSG, NULL);
+
+  // stop thread (must be done *after* disconnect)
+  int rc = mosquitto_loop_stop(mosq, false);
+
+  if (rc != MOSQ_ERR_SUCCESS) {
+    if (rc == MOSQ_ERR_INVAL) {
+      log_error("mosquitto_loop_stop: Invalid parameters");
+    } else {
+      log_error("mosquitto_loop_stop: Illegal call (rc = %d)\n", rc);
+    }
+  }
   mqtt_client_set_status(STATUS_DISCONNECTED);
 
   return trueCell;
@@ -173,8 +192,10 @@ Cell MagolvesMqtt_MiddlewareService_stopSession(SedonaVM *vm, Cell *params) {
 /// @return Cell trueCell, if session is alive/connected
 Cell MagolvesMqtt_MiddlewareService_isSessionLive(SedonaVM *vm, Cell *params) {
   struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
-  if (!mosq)
+  if (!mosq) {
+    log_warn("Mosq=null; status = %d");
     return falseCell;
+  }
 
   return (status == STATUS_CONNECTED) ? trueCell : falseCell;
 }
@@ -228,6 +249,17 @@ Cell MagolvesMqtt_MiddlewareService_export(SedonaVM *vm, Cell *params,
   struct mosquitto *mosq = (struct mosquitto *)params[0].aval;
   uint8_t *self = params[1].aval;
   uint8_t *slot = params[2].aval;
+
+  if (self == NULL) {
+    log_warn("Self pointer is zero - invalid component?");
+    return falseCell;
+  }
+
+  if (slot == NULL) {
+    log_warn("Slot pointer is zero - invalid slot?");
+    return falseCell;
+  }
+
   const char *path = params[3].aval;
   uint16_t typeId = getTypeId(vm, getSlotType(vm, slot));
   uint16_t offset = getSlotHandle(vm, slot);
@@ -235,11 +267,17 @@ Cell MagolvesMqtt_MiddlewareService_export(SedonaVM *vm, Cell *params,
   void *type = getCompType(vm, self);
   const char *typeName = getTypeName(vm, type);
 
+  // Set 'subscribe' flag, if writable slot
+  bool subscribe = (flags & EXPORT_WRITABLE) > 0;
+  // Set 'retain' flag, if parameter
+  bool retain = (flags & EXPORT_PARAMETER) > 0;
+
   // Assemble path
   MQTT_PATH_BUFFER[0] = 0;
   strncpy(MQTT_PATH_BUFFER, path, MAX_PATH_LENGTH);
   strncat(MQTT_PATH_BUFFER, "/", MAX_PATH_LENGTH);
   strncat(MQTT_PATH_BUFFER, getSlotName(vm, slot), MAX_PATH_LENGTH);
+
   // Compute the hash key
   MQTT_SLOT_KEY_TYPE key =
       MagolvesMqtt_MiddlewareService_computeSlotKey(vm, self, slot);
@@ -252,13 +290,11 @@ Cell MagolvesMqtt_MiddlewareService_export(SedonaVM *vm, Cell *params,
   mqtt_add_slot_entry(mosq, (MQTT_SLOT_KEY_TYPE)key, self, slot, typeId,
                       MQTT_PATH_BUFFER);
 
-  log_info("Added slot to map %p", slot);
+  renderPayloadAsJson(JSON_BUFFER, self, offset, typeId);
+  mosquitto_publish(mosq, NULL, MQTT_PATH_BUFFER, strlen(JSON_BUFFER),
+                    JSON_BUFFER, 0, retain);
 
-  if ((flags & EXPORT_WRITABLE) > 0) {
-    renderPayloadAsJson(JSON_BUFFER, self, offset, typeId);
-    mosquitto_publish(mosq, NULL, MQTT_PATH_BUFFER, strlen(JSON_BUFFER),
-                      JSON_BUFFER, 0, true);
-
+  if (subscribe) {
     mosquitto_subscribe_v5(mosq, NULL, MQTT_PATH_BUFFER, 0 /*qos*/,
                            0 /* options*/, NULL);
   }

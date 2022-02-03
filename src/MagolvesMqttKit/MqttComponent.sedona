@@ -21,13 +21,13 @@ class MqttComponent extends Component {
   @readonly property bool isHeating
 
   define int Off = 0
-  define int Frost` = 1
+  define int Frost = 1
   define int Night = 2
   define int Day = 3
 
   define Str Mode = "Off,Frost,Night,Day"
   @range=Mode
-  @readonly property byte status = Day
+  @readonly property byte mode = Day
 
   virtual override void start()
   {
@@ -42,7 +42,7 @@ class MqttComponent extends Component {
     super.changed(slot)
 
     // If maxTime state changes at runtime, update private (long) copy
-    if (slot == setPointDay || slot == setPointNight)
+    if (slot == MqttComponent.setPointDay || slot == MqttComponent.setPointNight)
     {
       updateSetPoint()
     }
@@ -74,11 +74,11 @@ class MqttComponent extends Component {
   float getSetPoint()
   {
     switch(mode) {
-      case Off: return 0.0
       case Frost: return 5.0
       case Night: return setPointNight
       case Day: return setPointDay
     }
+    return 0.0
   }
 
   action void off() 
