@@ -27,10 +27,11 @@ jobs:
         echo "sedona_home=${sedona_home}"
         echo "SEDONA_HOME=${SEDONA_HOME}"
         printenv
-
-    - name: Install 32 bit compilers
+    - name:update_sources
       run: sudo sed -i 's/azure.archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
-           sudo apt-get install gcc-multilib libc6-dev-i386
+      
+    - name: Install 32 bit compilers
+      run: sudo apt-get install gcc-multilib libc6-dev-i386
 
     - name: Create Build Environment
       # Some projects don't allow in-source building, so create a separate build directory
