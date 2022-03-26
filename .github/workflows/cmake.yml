@@ -27,7 +27,8 @@ jobs:
         echo "sedona_home=${sedona_home}"
         echo "SEDONA_HOME=${SEDONA_HOME}"
         printenv
-    - name:update_sources
+        
+    - name: update_sources
       run: sudo sed -i 's/azure.archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
       
     - name: Install 32 bit compilers
