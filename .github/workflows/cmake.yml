@@ -29,6 +29,8 @@ jobs:
         printenv
         
 
+    - name: update
+      run: sudo apt-get update
       
     - name: Install 32 bit compilers
       run: sudo apt-get install gcc-multilib libc6-dev-i386
