@@ -61,7 +61,7 @@ else()
     add_subdirectory(platforms/src/generic/unix)
 
     set (VM_DIR ${CMAKE_SOURCE_DIR}/src/vm-unix)
-    set(PLATFORM_DEF platforms/src/generic/unix/mqtt-unix.xml)
+    set(PLATFORM_DEF platforms/src/generic/unix/generic-unix.xml)
 endif()
 
 message(STATUS "${SEDONA_CC} ARGS ${PLATFORM_DEF} -outDir ${VM_DIR}")

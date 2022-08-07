@@ -16,7 +16,6 @@
   <nativeKit depend="inet 1.0+" />
   <nativeKit depend="datetimeStd 1.0+" />
   <nativeKit depend="platUnix 1.0+" />
-  <nativeKit depend="MagolvesMqtt 1.0+" />
 
   <nativeMethod qname="sys::Sys.platformType" id="0::0" />
   <nativeMethod qname="sys::Sys.copy" id="0::1" />
@@ -98,21 +97,6 @@
   <nativeMethod qname="datetimeStd::DateTimeServiceStd.doNow" id="9::0" />
   <nativeMethod qname="datetimeStd::DateTimeServiceStd.doSetClock" id="9::1" />
   <nativeMethod qname="datetimeStd::DateTimeServiceStd.doGetUtcOffset" id="9::2" />
-  <nativeMethod qname="MagolvesMqtt::MiddlewareService.startSession" id="51::0" />
-  <nativeMethod qname="MagolvesMqtt::MiddlewareService.stopSession" id="51::1" />
-  <nativeMethod qname="MagolvesMqtt::MiddlewareService.isSessionLive" id="51::2" />
-  <nativeMethod qname="MagolvesMqtt::MiddlewareService.getStatus" id="51::3" />
-  <nativeMethod qname="MagolvesMqtt::MiddlewareService.registerReadOnlySlot" id="51::10" />
-  <nativeMethod qname="MagolvesMqtt::MiddlewareService.registerWritableSlot" id="51::11" />
-  <nativeMethod qname="MagolvesMqtt::MiddlewareService.registerAction" id="51::12" />
-  <nativeMethod qname="MagolvesMqtt::MiddlewareService.isComponentRegistered" id="51::13" />
-  <nativeMethod qname="MagolvesMqtt::MiddlewareService.isSlotRegistered" id="51::14" />
-  <nativeMethod qname="MagolvesMqtt::MiddlewareService.getRegisteredSlotCount" id="51::15" />
-  <nativeMethod qname="MagolvesMqtt::MiddlewareService.unregisterSlot" id="51::16" />
-  <nativeMethod qname="MagolvesMqtt::MiddlewareService.unregisterAllSlots" id="51::17" />
-  <nativeMethod qname="MagolvesMqtt::MiddlewareService.enableComponentIf" id="51::18" />
-  <nativeMethod qname="MagolvesMqtt::MiddlewareService.enableSlotIf" id="51::19" />
-  <nativeMethod qname="MagolvesMqtt::MiddlewareService.isSlotEnabled" id="51::20" />
 </natives>
 
 <manifestIncludes>
