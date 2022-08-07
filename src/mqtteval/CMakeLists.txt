@@ -1,2 +1,0 @@
-add_sedona_kit(mqtteval)
-add_dependencies(mqtteval sys communityMQTT)

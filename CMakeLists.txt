@@ -35,10 +35,6 @@ else()
     add_subdirectory(src/inet)
     add_subdirectory(src/datetime)
     add_subdirectory(src/datetimeStd)
-    #add_subdirectory(src/sedona-mqtt)
-    #add_subdirectory(src/mqtteval)
-    #add_subdirectory(src/MagolvesMqtt)
-    #add_subdirectory(src/MagolvesMqttKit)
     if (COMPILE_KITS)
         add_subdirectory(src/func)
         add_subdirectory(src/pricomp)
@@ -75,7 +71,6 @@ if (USE_SEDONA_MT)
         COMMAND ${SEDONA_CC} ${PLATFORM_DEF} -outDir ${VM_DIR}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         DEPENDS all-kits ${SEDONA_PLATFORM} sedonacmt_jar
-        #BYPRODUCTS ${VM_DIR}/sedona.h 
         COMMENT "Prepare platform"
     )
 else()    
@@ -83,13 +78,11 @@ else()
         COMMAND ${SEDONA_CC} ${PLATFORM_DEF} -outDir ${VM_DIR}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         DEPENDS sys inet datetime datetimeStd ${SEDONA_PLATFORM} sedonac_jar
-        #BYPRODUCTS ${VM_DIR}/sedona.h 
         COMMENT "Prepare platform"
     )
     
     if (UNIX)
         add_subdirectory(src/vm-unix)
-        #add_subdirectory(src/vm-unix-community-mqtt)
     endif()
 endif()
 

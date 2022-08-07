@@ -3,8 +3,7 @@ if (APPLE)
 endif()
 
 if (UNIX)
-    add_sedona_app(unix/platUnix)
-    add_sedona_app(unix/platUnixMqtt)
+    add_sedona_app(unix/platUnix)    
 endif()
 
 if (WIN32)

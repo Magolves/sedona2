@@ -207,7 +207,7 @@ typedef short             int_least16_t;
 #endif
 
 
-#define ISNANF(f) (isnan(f))
+#define ISNANF(f) (isnanf(f))
 #define ISNAN(d)  (isnan(d))
 
 

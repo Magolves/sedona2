@@ -1,1 +1,0 @@
-[uthash user guide](<https://www.cs.bu.edu/~jappavoo/Resources/psml/apps/hashy/uthash/doc/userguide.html>)
