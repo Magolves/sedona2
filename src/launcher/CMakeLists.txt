@@ -48,17 +48,22 @@ endif()
 
 
 string(TIMESTAMP TS "%Y-%m-%d %H:%M")
-add_definitions( -DLAUNCHER_VERSION="${GIT_REVISION}" -DLAUNCHER_DATE="${TS}")
 
 # ---------------------- Define targets
 # To enable debug, you neet so set the environment variable 'sedona_launcher_debug' to any value or pass -v option
 # In PowerShell you cann accomplish this via
 # > $env:sedona_launcher_debug=1
 
-if (WINDOWS)
-  add_executable(sedonac launcher_windows.cpp)
-  target_compile_definitions(sedonac PRIVATE -DLAUNCHER_MAIN="sedonac/Main" -DSEDONAC_JAR="sedonac")
+if (WIN32)
+  add_executable(sedonac launcher_win32.cpp)
+  target_compile_definitions(sedonac PRIVATE -DLAUNCHER_MAIN="sedonac/Main" -DSEDONAC_JAR="sedonac" -DLAUNCHER_VERSION="${GIT_REVISION}" -DLAUNCHER_DATE="${TS}")
   target_include_directories(sedonac PRIVATE ${JAVA_HOME}/include ${JAVA_HOME}/include/win32)
+  set_property(TARGET sedonac PROPERTY CXX_STANDARD 14)
+
+  add_executable(sedonacmt launcher_win32.cpp)
+  target_compile_definitions(sedonacmt PRIVATE -DLAUNCHER_MAIN="sedonacmt/MainMulti" -DSEDONAC_JAR="sedonac" -DLAUNCHER_VERSION="${GIT_REVISION}" -DLAUNCHER_DATE="${TS}")
+  target_include_directories(sedonacmt PRIVATE ${JAVA_HOME}/include ${JAVA_HOME}/include/win32)
+  set_property(TARGET sedonacmt PROPERTY CXX_STANDARD 14)
 
   # Install both target to binary directory
   #install(TARGETS sedonac-rb RUNTIME DESTINATION ${INSTALL_DIR})

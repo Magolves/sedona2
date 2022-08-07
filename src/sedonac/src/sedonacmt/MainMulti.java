@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class MainMulti {
+    private static String OS = System.getProperty("os.name").toLowerCase();
 
     public static void main(String[] args) {
         Path path = Paths.get(".");
@@ -79,7 +80,26 @@ public class MainMulti {
             }
         }
 
-        multiCompilerContext.log.info(String.format("  Post-compile s finished [%d/%d steps]", successes, postCompileSteps.size()));
+        multiCompilerContext.log
+                .info(String.format("  Post-compile s finished [%d/%d steps]", successes, postCompileSteps.size()));
 
+    }
+
+    public static boolean isWindows() {
+        return (OS.indexOf("win") >= 0);
+    }
+
+    public static boolean isMac() {
+        return (OS.indexOf("mac") >= 0);
+    }
+
+    public static boolean isUnix() {
+        return (OS.indexOf("nix") >= 0
+                || OS.indexOf("nux") >= 0
+                || OS.indexOf("aix") > 0);
+    }
+
+    public static boolean isSolaris() {
+        return (OS.indexOf("sunos") >= 0);
     }
 }

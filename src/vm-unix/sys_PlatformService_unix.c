@@ -9,10 +9,8 @@
 #include "sedona.h"
 #include "sedonaPlatform.h"
 
-#ifdef __linux__
-// Linux-specific
 #include <sys/sysinfo.h>
-#endif
+
 
 // Str PlatformService.doPlatformId()
 Cell sys_PlatformService_doPlatformId(SedonaVM* vm, Cell* params)

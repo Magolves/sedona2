@@ -16,7 +16,6 @@
   <nativeKit depend="inet 1.0+" />
   <nativeKit depend="datetimeStd 1.0+" />
   <nativeKit depend="platUnix 1.0+" />
-  <nativeKit depend="communityMQTT 1.0+" />
 
   <nativeMethod qname="sys::Sys.platformType" id="0::0" />
   <nativeMethod qname="sys::Sys.copy" id="0::1" />
@@ -98,14 +97,6 @@
   <nativeMethod qname="datetimeStd::DateTimeServiceStd.doNow" id="9::0" />
   <nativeMethod qname="datetimeStd::DateTimeServiceStd.doSetClock" id="9::1" />
   <nativeMethod qname="datetimeStd::DateTimeServiceStd.doGetUtcOffset" id="9::2" />
-  <nativeMethod qname="communityMQTT::Worker.startSession" id="50::0" />
-  <nativeMethod qname="communityMQTT::Worker.stopSession" id="50::1" />
-  <nativeMethod qname="communityMQTT::Worker.isSessionLive" id="50::2" />
-  <nativeMethod qname="communityMQTT::Message.doPublish" id="50::3" />
-  <nativeMethod qname="communityMQTT::Message.doSubscribe" id="50::4" />
-  <nativeMethod qname="communityMQTT::Message.doUnsubscribe" id="50::5" />
-  <nativeMethod qname="communityMQTT::Message.fetchData" id="50::6" />
-  <nativeMethod qname="communityMQTT::Message.regSlot" id="50::8" />
 </natives>
 
 <manifestIncludes>
