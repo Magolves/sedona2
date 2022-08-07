@@ -353,6 +353,81 @@ NativeMethod kitNatives9[] =
 };
 
 ////////////////////////////////////////////////////////////////
+// MagolvesMqtt (kitId=51)
+////////////////////////////////////////////////////////////////
+
+// sys::Obj MiddlewareService.startSession(sys::Str, int, sys::Str, sys::Str, sys::Str)
+Cell MagolvesMqtt_MiddlewareService_startSession(SedonaVM* vm, Cell* params);
+
+// bool MiddlewareService.stopSession(sys::Obj)
+Cell MagolvesMqtt_MiddlewareService_stopSession(SedonaVM* vm, Cell* params);
+
+// bool MiddlewareService.isSessionLive(sys::Obj)
+Cell MagolvesMqtt_MiddlewareService_isSessionLive(SedonaVM* vm, Cell* params);
+
+// int MiddlewareService.getStatus()
+Cell MagolvesMqtt_MiddlewareService_getStatus(SedonaVM* vm, Cell* params);
+
+// bool MiddlewareService.registerReadOnlySlot(sys::Obj, sys::Component, sys::Slot, sys::Str)
+Cell MagolvesMqtt_MiddlewareService_registerReadOnlySlot(SedonaVM* vm, Cell* params);
+
+// bool MiddlewareService.registerWritableSlot(sys::Obj, sys::Component, sys::Slot, sys::Str)
+Cell MagolvesMqtt_MiddlewareService_registerWritableSlot(SedonaVM* vm, Cell* params);
+
+// bool MiddlewareService.registerAction(sys::Obj, sys::Component, sys::Slot, sys::Str)
+Cell MagolvesMqtt_MiddlewareService_registerAction(SedonaVM* vm, Cell* params);
+
+// bool MiddlewareService.isComponentRegistered(sys::Obj, sys::Component)
+Cell MagolvesMqtt_MiddlewareService_isComponentRegistered(SedonaVM* vm, Cell* params);
+
+// bool MiddlewareService.isSlotRegistered(sys::Obj, sys::Component, sys::Slot)
+Cell MagolvesMqtt_MiddlewareService_isSlotRegistered(SedonaVM* vm, Cell* params);
+
+// int MiddlewareService.getRegisteredSlotCount(sys::Obj)
+Cell MagolvesMqtt_MiddlewareService_getRegisteredSlotCount(SedonaVM* vm, Cell* params);
+
+// bool MiddlewareService.unregisterSlot(sys::Obj, sys::Component, sys::Slot)
+Cell MagolvesMqtt_MiddlewareService_unregisterSlot(SedonaVM* vm, Cell* params);
+
+// bool MiddlewareService.unregisterAllSlots(sys::Obj)
+Cell MagolvesMqtt_MiddlewareService_unregisterAllSlots(SedonaVM* vm, Cell* params);
+
+// bool MiddlewareService.enableComponentIf(sys::Obj, sys::Component, bool)
+Cell MagolvesMqtt_MiddlewareService_enableComponentIf(SedonaVM* vm, Cell* params);
+
+// bool MiddlewareService.enableSlotIf(sys::Obj, sys::Component, sys::Slot, bool)
+Cell MagolvesMqtt_MiddlewareService_enableSlotIf(SedonaVM* vm, Cell* params);
+
+// bool MiddlewareService.isSlotEnabled(sys::Obj, sys::Component, sys::Slot)
+Cell MagolvesMqtt_MiddlewareService_isSlotEnabled(SedonaVM* vm, Cell* params);
+
+// native table for kit 51
+NativeMethod kitNatives51[] = 
+{
+  MagolvesMqtt_MiddlewareService_startSession,  // 51::0
+  MagolvesMqtt_MiddlewareService_stopSession,  // 51::1
+  MagolvesMqtt_MiddlewareService_isSessionLive,  // 51::2
+  MagolvesMqtt_MiddlewareService_getStatus,  // 51::3
+  NULL,                           // 51::4
+  NULL,                           // 51::5
+  NULL,                           // 51::6
+  NULL,                           // 51::7
+  NULL,                           // 51::8
+  NULL,                           // 51::9
+  MagolvesMqtt_MiddlewareService_registerReadOnlySlot,  // 51::10
+  MagolvesMqtt_MiddlewareService_registerWritableSlot,  // 51::11
+  MagolvesMqtt_MiddlewareService_registerAction,  // 51::12
+  MagolvesMqtt_MiddlewareService_isComponentRegistered,  // 51::13
+  MagolvesMqtt_MiddlewareService_isSlotRegistered,  // 51::14
+  MagolvesMqtt_MiddlewareService_getRegisteredSlotCount,  // 51::15
+  MagolvesMqtt_MiddlewareService_unregisterSlot,  // 51::16
+  MagolvesMqtt_MiddlewareService_unregisterAllSlots,  // 51::17
+  MagolvesMqtt_MiddlewareService_enableComponentIf,  // 51::18
+  MagolvesMqtt_MiddlewareService_enableSlotIf,  // 51::19
+  MagolvesMqtt_MiddlewareService_isSlotEnabled,  // 51::20
+};
+
+////////////////////////////////////////////////////////////////
 // Native Table
 ////////////////////////////////////////////////////////////////
 
@@ -409,7 +484,7 @@ NativeMethod* nativeTable[] =
   NULL,            // 48
   NULL,            // 49
   NULL,            // 50
-  NULL,    // 51
+  kitNatives51,    // 51
 };
 
 ////////////////////////////////////////////////////////////////
@@ -430,6 +505,9 @@ int isNativeIdValid(int kitId, int methodId)
     case 9:
       if (methodId >= 3) return 0;
       else return kitNatives9[methodId] != NULL;
+    case 51:
+      if (methodId >= 21) return 0;
+      else return kitNatives51[methodId] != NULL;
     default:
        return 0;
   }

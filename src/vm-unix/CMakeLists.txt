@@ -1,44 +1,60 @@
-project (svm)
+project (middleware-native)
+cmake_minimum_required(VERSION 3.16)
 
-# MacOS:
-# cmake . -Bbuild -DCMAKE_OSX_ARCHITECTURES="arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0
-
-cmake_minimum_required(VERSION 3.15)
-
-find_file(HAS_ENDIAN endian.h PATHS ${CMAKE_OSX_SYSROOT})
-message(STATUS "Find endian.h: ${CMAKE_OSX_SYSROOT} ${HAS_ENDIAN}")
-
-set(VM_SRCS 
-    datetimeStd_DateTimeServiceStd.c  
-    main.c		      
-    sys_Str.c
+set(CMAKE_EXPORT_COMPILE_COMMANDS On)
+set(CMAKE_BUILD_TYPE Debug)
+set(MQTT_SOURCES mqtt_client.c mqtt_callbacks.c mqtt_map.c log.c constants.c)
+set(MQTT_STUB_SOURCES local/main.c sedona/vmstub.c)
+set(VM_SOURCES 
+    constants.c
+    datetimeStd_DateTimeServiceStd.c
     inet_Crypto_sha1.c
-    nativetable.c
-    sys_Sys.c
     inet_sha1.c
-    sys_Component.c	      
-    sys_Sys_std.c
-    inet_TcpServerSocket_std.c	  
-    sys_File_std.c
-    sys_Sys_unix.c
+    inet_TcpServerSocket_std.c
     inet_TcpSocket_std.c
-    sys_FileStore_std.c
-    sys_Test.c
     inet_UdpSocket_std.c
-    #sys_PlatformService_unix.c
-    sys_PlatformService_macos.c
-    sys_Type.c
     inet_util_std.c
+    main.c
+    nativetable.c
+    sys_Component.c
+    sys_File_std.c
+    sys_FileStore_std.c
+    sys_PlatformService_unix.c
     sys_StdOutStream_std.c
-    vm.c)
+    sys_Str.c
+    sys_Sys.c
+    sys_Sys_std.c
+    sys_Sys_unix.c
+    sys_Test.c
+    sys_Type.c
+    vm.c
+)
 
-add_executable(svmt ${VM_SRCS})
+if (LOCAL_TEST)
+    # Local test executable
+    set(SOURCES ${MQTT_SOURCES} ${MQTT_STUB_SOURCES})
+    set(TARGET_NAME mqtt)
+else()
+    # Prefer static linkage
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .a .lib)
+    # Build the VM    
+    set(SOURCES ${MQTT_SOURCES} ${VM_SOURCES})
+    set(TARGET_NAME svm-mqtt)
+endif()
 
-set (CMAKE_VERBOSE_MAKEFILE Off)
+add_executable(${TARGET_NAME} ${SOURCES})
 
-target_compile_options(svmt PRIVATE -Wextra -Wno-unused-variable -Wno-unused-parameter -m32)
-target_link_options(svmt PRIVATE -m32)
-target_compile_definitions(svmt PRIVATE PLAT_BUILD_VERSION="1.2.29" __UNIX__=1 SOCKET_FAMILY_INET=1)
+target_link_libraries(${TARGET_NAME} PUBLIC mosquitto)
+target_include_directories(${TARGET_NAME} PRIVATE sedona .)
 
-# Required on Mac-arm
-target_include_directories(svmt PRIVATE ${CMAKE_OSX_SYSROOT}/usr/include/arm)
+if(WINDOWS)
+    target_compile_definitions(${TARGET_NAME} PRIVATE -D__WINDOWS__)
+else()
+    target_compile_definitions(${TARGET_NAME} PRIVATE -D__UNIX__ -DLOG_USE_COLOR)
+endif()
+
+if (NOT LOCAL_TEST)
+    target_compile_definitions(${TARGET_NAME} PRIVATE -DPLAT_BUILD_VERSION="2.0.0" -DSOCKET_FAMILY_INET)
+    target_compile_options(${TARGET_NAME} PRIVATE -m32)
+    target_link_options(${TARGET_NAME} PRIVATE -m32)    
+endif()
