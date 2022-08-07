@@ -115,7 +115,7 @@ public class KitSequencer {
 
         // FIXME: IrReader fails if multiple compilation threads running in parallel
         int cores = 1; //Runtime.getRuntime().availableProcessors();
-        log.info(String.format("Setup compile thread pool using %d cores", cores));
+        //log.info(String.format("Setup compile thread pool using %d cores", cores));
         List<Future<Result>> results = new ArrayList<>();
 
 

@@ -25,7 +25,8 @@
     <nativeSource path="/src/inet/native/std" />
     <nativeSource path="/src/inet/native/sha1" />
     <nativeSource path="/src/datetimeStd/native/std" />
-    <nativeSource path="/src/MagolvesMqtt/native" />
+    
+    <!--<nativeSource path="/src/MagolvesMqtt/native" />-->
   </compile>    
   
   <manifestInclude>
@@ -36,5 +37,3 @@
   </manifestInclude>
   
 </sedonaPlatform>
-
-
