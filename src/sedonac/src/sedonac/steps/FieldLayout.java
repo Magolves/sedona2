@@ -305,7 +305,7 @@ public class FieldLayout
       { 
         if (type.sizeof() == 8)
         {
-          sizeMatch = sizeof == 4; // align long/double on 4 byte boundaries
+          sizeMatch = sizeof == refSize; // align long/double on 4 byte boundaries
           offIncr = 8;
         }
         else
