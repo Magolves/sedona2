@@ -8,9 +8,9 @@
 
 #include "sedona.h"
 #include "sedonaPlatform.h"
-
+#ifndef __APPLE__
 #include <sys/sysinfo.h>
-
+#endif
 
 // Str PlatformService.doPlatformId()
 Cell sys_PlatformService_doPlatformId(SedonaVM* vm, Cell* params)
@@ -33,9 +33,13 @@ Cell sys_PlatformService_getPlatVersion(SedonaVM* vm, Cell* params)
 // long PlatformService.getNativeMemAvailable()
 int64_t sys_PlatformService_getNativeMemAvailable(SedonaVM* vm, Cell* params)
 {
+#ifndef __APPLE__
   struct sysinfo info;
   sysinfo(&info);
   return info.freeram * (long)info.mem_unit;     // this may be Linux-specific
+#else
+  return 0xffffffff;
+#endif
 }
 
 

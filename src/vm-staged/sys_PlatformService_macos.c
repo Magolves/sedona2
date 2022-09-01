@@ -35,7 +35,7 @@ Cell sys_PlatformService_getPlatVersion(SedonaVM* vm, Cell* params)
 // long PlatformService.getNativeMemAvailable()
 int64_t sys_PlatformService_getNativeMemAvailable(SedonaVM* vm, Cell* params)
 {
-  // FOIXME: https://stackoverflow.com/questions/6094444/how-can-i-programmatically-check-free-system-memory-on-mac-like-the-activity-mon
+  // FIXME: https://stackoverflow.com/questions/6094444/how-can-i-programmatically-check-free-system-memory-on-mac-like-the-activity-mon
   return 64000L;
 }
 
