@@ -58,3 +58,5 @@ target_compile_definitions(svm PRIVATE -D__UNIX__ -DPLAT_BUILD_VERSION="2.0.0" -
 if (APPLE)
     target_compile_definitions(svm PRIVATE -D__APPLE__)
 endif()
+
+install(TARGETS svmt DESTINATION $ENV{SEDONA_HOME}/bin)

@@ -80,13 +80,16 @@ else()
         DEPENDS sys inet datetime datetimeStd ${SEDONA_PLATFORM} sedonac_jar
         COMMENT "Prepare platform"
     )
-    
-    if (UNIX)
-        add_subdirectory(src/vm-unix)
-    endif()
+endif()
+
+if (UNIX)
+    add_subdirectory(src/vm-unix)
+    message(STATUS "svm: Install to $ENV{SEDONA_HOME}/bin")
+    install(TARGETS svmt DESTINATION $ENV{SEDONA_HOME}/bin)
 endif()
 
 #add_subdirectory(src/vm-test)
+
 
 # Build scode files
 add_subdirectory(scode)

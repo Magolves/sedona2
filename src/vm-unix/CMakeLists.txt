@@ -25,5 +25,3 @@ add_executable(svmt ${VM_SRCS})
 target_compile_options(svmt PRIVATE -Wextra -Wno-unused-variable -Wno-unused-parameter -m32)
 target_link_options(svmt PRIVATE -m32)
 target_compile_definitions(svmt PRIVATE PLAT_BUILD_VERSION="1.2.29" __UNIX__=1 SOCKET_FAMILY_INET=1)
-
-install(TARGETS svmt DESTINATION $ENV{SEDONA_HOME}/bin)
