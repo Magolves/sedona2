@@ -441,7 +441,7 @@ public class DaspSocket
   /**
    * Get the InetAddress to use for discovery.
    * @param useIPv6
-   * @return
+   * @return address
    */
   protected InetAddress getDiscoveryAddress(boolean useIPv6)
   {
