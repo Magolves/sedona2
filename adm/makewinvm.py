@@ -60,9 +60,9 @@ def compile(cdefs=defs):
     compilewin.compile(exeFile, srcFiles, includes, libs, cdefs)
 
   except env.BuildError:
-    print "**"
-    print "** FAILED [" + exeFile + "]"
-    print "**"
+    print("**")
+    print("** FAILED [" + exeFile + "]")
+    print("**")
     return 1
 
 
@@ -80,12 +80,12 @@ if __name__ == '__main__':
   if (options.ipv6):
     defs.pop("SOCKET_FAMILY_INET", None)    # Remove ipv4 defn
     defs["SOCKET_FAMILY_INET6"] = None
-    print " Building Sedona VM to use IPv6 protocol.\n"
+    print(" Building Sedona VM to use IPv6 protocol.\n")
 
   else:    # Defaults to IPv4
     defs.pop("SOCKET_FAMILY_INET6", None)    # Remove ipv6 defn
     defs["SOCKET_FAMILY_INET"] = None
-    print " Building Sedona VM to use IPv4 protocol.\n"
+    print(" Building Sedona VM to use IPv4 protocol.\n")
 
   # Add cmd line arg to set version string
   if options.ver:

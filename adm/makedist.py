@@ -57,7 +57,7 @@ def main():
 ################################################################
 
 def nuke():
-  print "====== makedist.nuke ======"
+  print("====== makedist.nuke ======")
   fileutil.rmdir(env.kits)
   fileutil.rmdir(env.manifests)
   fileutil.rmsubdirs(env.doc)
@@ -70,7 +70,7 @@ def nuke():
 ################################################################
 
 def compile():
-  print "====== makedist.compile ======"
+  print("====== makedist.compile ======")
   # make sedona.jar  
   makesedona.compile()
     

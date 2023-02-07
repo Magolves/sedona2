@@ -37,9 +37,9 @@ def compile():
   try:
     compilejar.compile(srcDir, depends, packages, jarFile)
   except env.BuildError:
-    print "**"
-    print "** FAILED [" + jarFile + "]"
-    print "**"
+    print("**")
+    print("** FAILED [" + jarFile + "]")
+    print("**")
     return 1
     
 # Main

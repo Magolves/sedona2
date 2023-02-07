@@ -21,14 +21,14 @@ import fileutil
 #   func:     function called with tempDir after compile but before jar
 #
 def compile(srcDir, depends, packages, jarFile, func=None):  
-  print "Compile [" + os.path.basename(jarFile) + "]"
+  print("Compile [" + os.path.basename(jarFile) + "]")
   # init jarTemp dir
   temp = os.path.join(env.home, "tempJar")  
   fileutil.rmdir(temp, [], 0)
   fileutil.mkdir(temp)
   
   # compile using jikes.exe
-  print "  Javac [" + srcDir + "]"
+  print("  Javac [" + srcDir + "]")
   cmd = env.jikes
   cmd += " +E +Pno-shadow"
   cmd += " -d " + temp
@@ -56,5 +56,5 @@ def compile(srcDir, depends, packages, jarFile, func=None):
   fileutil.rmdir(temp, [], 0)
   
   # success
-  print "  Jar [" + jarFile + "]"
+  print("  Jar [" + jarFile + "]")
 

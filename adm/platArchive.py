@@ -55,7 +55,7 @@ def usage():
   
 def fail(msg, showUsage=False, code=1):
   print
-  print "Error: ", msg
+  print("Error: ", msg)
   if showUsage: usage()
   sys.exit(code)
   
@@ -82,8 +82,8 @@ def parseOpts(argv):
     if not stageDir: stageDir = os.path.join(env.temp, ".par")
     if not os.path.isdir(stageDir): fail(stageDir + " is not a directory", True)
     
-  except getopt.GetoptError, err:
-    print str(err)
+  except getopt.GetoptError as err:
+    print(str(err))
     usage()
     sys.exit(1)
   
@@ -101,9 +101,9 @@ def archive():
   if not outFile:
     outFile = os.path.join(stageDir, "out", platformId+".par")
   outDir = os.path.dirname( os.path.realpath(outFile) )
-  #print "   outDir = %s" % outDir
+  #print("   outDir = %s" % outDir)
   if not os.path.exists(outDir): 
-    print 'Creating folder %s' % outDir
+    print('Creating folder %s' % outDir)
     os.makedirs(outDir)
   
   # Zip it up - the manifest, plus all contents of the svmDir if requested
@@ -125,7 +125,7 @@ def addToPlatformDb(platformId):
   cmd = os.path.join(env.adm, "platformdb.py")
   cmd = cmd + " -i " + outFile
   if subprocess.call(cmd, shell=True, env=os.environ.copy()):
-    raise Exception, "call failed: " + cmd
+    raise Exception ("call failed: " + cmd)
   
 def main(argv=[]):
   parseOpts(argv)
@@ -134,4 +134,4 @@ def main(argv=[]):
 # Main
 if __name__ == '__main__':
   main(sys.argv[1:])
-  print "\nSuccess: ", outFile
+  print("\nSuccess: ", outFile)

@@ -35,9 +35,9 @@ def compile():
   try:                   
     compilejar.compile(srcDir, depends, packages, jarFile, lambda d: writeVerFile(d))
   except env.BuildError:
-    print "**"
-    print "** FAILED [" + jarFile + "]"
-    print "**"
+    print("**")
+    print("** FAILED [" + jarFile + "]")
+    print("**")
     return 1
     
 # Write Version File

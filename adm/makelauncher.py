@@ -44,9 +44,9 @@ def compile():
     compilewin.compile(exeFileA, srcFiles, includes, libs, defsA)
     compilewin.compile(exeFileD, srcFiles, includes, libs, defsD)
   except env.BuildError:
-    print "**"
-    print "** FAILED [" + exeFile + "]"
-    print "**"
+    print("**")
+    print("** FAILED [" + exeFile + "]")
+    print("**")
     
     
 # Main

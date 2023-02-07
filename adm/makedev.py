@@ -56,12 +56,12 @@ if __name__ == '__main__':
   initParser()
   options = parser.parse_args()
 
-  # Print options
-  print 'options.version = ', options.version
-  print 'options.test    = ', options.test
-  print 'options.run     = ', options.run
-  print 'options.scode   = ', options.scode
-  print 'options.app     = ', options.app
+  # print(options)
+  print('options.version = ', options.version)
+  print('options.test    = ', options.test)
+  print('options.run     = ', options.run)
+  print('options.scode   = ', options.scode)
+  print('options.app     = ', options.app)
 
   scodefile = os.path.splitext(options.scode)[0] + '.scode'
   sabfile   = os.path.splitext(options.app)[0]   + '.sab'
@@ -78,8 +78,8 @@ if __name__ == '__main__':
     run_sc = False
     run_sv = False
 
-  if not run_sc: print '  Skipping sedonac tests'
-  if not run_sv: print '  Skipping svm tests'
+  if not run_sc: print('  Skipping sedonac tests')
+  if not run_sv: print('  Skipping svm tests')
 
 
   # Make sure OS is Windows
@@ -118,23 +118,23 @@ if __name__ == '__main__':
   
   # Run sedonac tests
   if run_sc:
-    print "\n\n"
-    print "  ---------------------------------------------------------"
-    print "  -------------------- Testing sedonac --------------------"
-    print "  ---------------------------------------------------------"
-    print "\n\n"
+    print("\n\n")
+    print("  ---------------------------------------------------------")
+    print("  -------------------- Testing sedonac --------------------")
+    print("  ---------------------------------------------------------")
+    print("\n\n")
     status = os.system(env.sedonacExe + " -test")
     if status:
       raise env.BuildError("FATAL: sedonac tests failed")   
 
   # Run SVM tests
   if run_sv:
-    print "\n\n"
-    print "  ---------------------------------------------------------"
-    print "  -------------------- Testing svm ------------------------"
-    print "  ---------------------------------------------------------"
-    print "  scode =", scodefile
-    print "\n\n"
+    print("\n\n")
+    print("  ---------------------------------------------------------")
+    print("  -------------------- Testing svm ------------------------")
+    print("  ---------------------------------------------------------")
+    print("  scode =", scodefile)
+    print("\n\n")
     status = os.system(env.svmExe + " " + scodefile + " -test")
     if status:
       raise env.BuildError("FATAL: svm tests failed")      
@@ -146,13 +146,13 @@ if __name__ == '__main__':
     if status:
       raise env.BuildError("FATAL: app failed to build")      
 
-    print "\n\n"
-    print "  ---------------------------------------------------------"
-    print "  -------------------- Running svm ------------------------"
-    print "  ---------------------------------------------------------"
-    print "  scode =", scodefile
-    print "  app   =", sabfile
-    print "\n\n"
+    print("\n\n")
+    print("  ---------------------------------------------------------")
+    print("  -------------------- Running svm ------------------------")
+    print("  ---------------------------------------------------------")
+    print("  scode =", scodefile)
+    print("  app   =", sabfile)
+    print("\n\n")
 
     status = os.system(env.svmExe + " " + scodefile + " " + sabfile)
     if status:

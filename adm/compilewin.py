@@ -21,7 +21,7 @@ import fileutil
 #   defs:     list of name/value tuples
 #
 def compile(exeFile, srcFiles, includes, libs, defs, opts=[]):  
-  print "Compile [" + os.path.basename(exeFile) + "]"
+  print("Compile [" + os.path.basename(exeFile) + "]")
 
   # get environment variables
   vcInstallDir = os.environ.get("VCINSTALLDIR")
@@ -71,9 +71,9 @@ def compile(exeFile, srcFiles, includes, libs, defs, opts=[]):
   for o in opts:
     cmd += " " + o
 
-  #print "----"
-  #print cmd
-  #print "----"
+  #print("----")
+  #print(cmd)
+  #print("----")
 
   # compile away
   status = os.system(cmd)
@@ -83,11 +83,11 @@ def compile(exeFile, srcFiles, includes, libs, defs, opts=[]):
   #os.system("del *.tlh")   
   for f in os.listdir("."):
     if f.endswith(".obj") or f.endswith(".tlh"):
-      #print " removing %s" % f
+      #print(" removing %s" % f)
       os.remove(f)
   
   if status:
     raise env.BuildError("FATAL: compilewin " + exeFile)     
    
-  print "  Success [" + exeFile + "]"
+  print("  Success [" + exeFile + "]")
     
