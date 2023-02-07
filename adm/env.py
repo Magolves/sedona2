@@ -17,16 +17,22 @@ import props
 # Environment Variables
 javaHome = os.environ.get("java_home")
 if not javaHome or not os.path.exists(javaHome):
-  print ""
-  print "WARNING: java_home environment variable not setup correctly"
-  print ""                 
+  javaHome = os.environ.get("JAVA_HOME")
+  if not javaHome or not os.path.exists(javaHome):
+    print("")
+    print("WARNING: java_home environment variable not setup correctly")
+    print(""                 )
 
 # Home Directory: if the "sedona_home" environment variable
 # we use that; otherwise we assume this script is {home}\adm\env.py
 home = os.path.dirname(os.path.dirname(sys.argv[0]))
 envHome = os.environ.get("sedona_home")
 if envHome and os.path.exists(envHome):
-  home = os.path.abspath(envHome)
+    home = os.path.abspath(envHome)
+else:
+  envHome = os.environ.get("SEDONA_HOME")
+  if envHome and os.path.exists(envHome):
+    home = os.path.abspath(envHome)
   
 # Sedona Environment
 adm          = os.path.join(home, "adm")
@@ -82,12 +88,12 @@ class BuildError(Exception):
 
 # Dump the environment setting
 def dump():           
-  print "------- env ------"
+  print("------- env ------")
   keys = env.__dict__.keys()
   keys.sort()
   for slot in keys:
     if not slot.startswith("__"):
-      print "%-20s %20s" % (slot + ":", getattr(env, slot))
+      print("%-20s %20s" % (slot + ":", getattr(env, slot)))
     
 # Main
 if __name__ == '__main__':     
