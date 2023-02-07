@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.15)
 
 project(Sedona)
 
-option(COMPILE_KITS Off)
+option(COMPILE_KITS On)
+option(USE_SEDONA_MT On)
 
 include(cmake/Java.cmake)
 include(cmake/Sedona.cmake)
@@ -81,10 +82,15 @@ else()
         COMMENT "Prepare platform"
     )
     
-    if (UNIX)
+    
+endif()
+
+if (LINUX)
         add_subdirectory(src/vm-unix)
     endif()
-endif()
+    if (APPLE)
+        add_subdirectory(src/vm-macos)
+    endif()
 
 #add_subdirectory(src/vm-test)
 
