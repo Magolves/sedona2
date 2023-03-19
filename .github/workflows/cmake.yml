@@ -27,7 +27,11 @@ jobs:
         echo "sedona_home=${sedona_home}"
         echo "SEDONA_HOME=${SEDONA_HOME}"
         printenv
+        
 
+    - name: update
+      run: sudo apt-get update
+      
     - name: Install 32 bit compilers
       run: sudo apt-get install gcc-multilib libc6-dev-i386
 
@@ -57,4 +61,7 @@ jobs:
       shell: bash
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: cmake --build . --config $BUILD_TYPE
+      
+
+
 
