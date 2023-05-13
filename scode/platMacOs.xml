@@ -4,8 +4,8 @@
 
 <sedonaCode
    endian="little"
-   blockSize="4"
-   refSize="4"
+   blockSize="8"
+   refSize="8"
    main="sys::Sys.main"
    debug="true"
    test="true"
@@ -34,4 +34,3 @@
   <depend on="types 1.2"   />
 
 </sedonaCode>
-

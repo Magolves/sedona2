@@ -10,6 +10,8 @@
 #include "scode.h"
 #include "errorcodes.h" 
 
+#include <stdio.h>
+
 //////////////////////////////////////////////////////////////////////////
 // VM Macros
 //////////////////////////////////////////////////////////////////////////
@@ -133,7 +135,10 @@ static int vmInit(SedonaVM* vm)
   if (cb[4] != vmMajorVer || cb[5] != vmMinorVer) return ERR_BAD_IMAGE_VERSION;
 
   // check sedona block size
-  if (cb[6] != SCODE_BLOCK_SIZE) return ERR_BAD_IMAGE_BLOCK_SIZE;
+  if (cb[6] != SCODE_BLOCK_SIZE) {
+    fprintf(stderr, "Expected %d, got %d\n", SCODE_BLOCK_SIZE, cb[6]);
+    return ERR_BAD_IMAGE_BLOCK_SIZE;
+  }
 
   // check sedona ref/pointer size
   if (cb[7] != sizeof(void*)) return ERR_BAD_IMAGE_REF_SIZE;

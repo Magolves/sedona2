@@ -196,7 +196,7 @@ typedef short             int_least16_t;
 
 // macros
 #define USE_STANDARD_MAIN
-#define SCODE_BLOCK_SIZE 4
+#define SCODE_BLOCK_SIZE 8
 #define block2addr(cb, block) ((cb) + (block<<2))
 #define _chdir chdir
 

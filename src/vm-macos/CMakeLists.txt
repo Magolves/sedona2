@@ -25,4 +25,4 @@ add_executable(svmac ${VM_SRCS})
 target_compile_options(svmac PRIVATE -Wextra -Wno-unused-variable -Wno-unused-parameter -m32)
 target_link_options(svmac PRIVATE -m32)
 target_compile_definitions(svmac PRIVATE PLAT_BUILD_VERSION="1.2.29" __UNIX__=1 SOCKET_FAMILY_INET=1)
-
+install(TARGETS svmac DESTINATION bin)

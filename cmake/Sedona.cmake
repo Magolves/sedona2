@@ -22,16 +22,20 @@ function(add_sedona_app app_file)
     add_custom_target(${target_name} ALL 
         ${SEDONA_CC} -layout ${APP_NAME_EXT}.sax
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${APP_WD}
+        BYPRODUCTS ${APP_NAME_EXT}.sab
         COMMENT "Sedona: Compile app ${APP_NAME} (${APP_NAME_EXT} in ${CMAKE_CURRENT_SOURCE_DIR}/${APP_WD})"
     )
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${APP_WD}/${APP_NAME_EXT}.sab DESTINATION bin)
 endfunction()
 
 function(add_sedona_scode scode_name)
     add_custom_target(scode_${scode_name} ALL 
         ${SEDONA_CC} ${scode_name}.xml
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        BYPRODUCTS ${scode_name}.scode
         COMMENT "Sedona: Compile scode ${scode_name}"
     )
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${scode_name}.scode DESTINATION bin)
 endfunction()
 
 
